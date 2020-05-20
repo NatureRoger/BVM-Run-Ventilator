@@ -132,11 +132,11 @@ def DB_Volumn_Get_Stoke(db, BVM_id, V_mL, debug_mod=0):
     else:
         Stoke =  (V_mL - Lower_VmL ) / (upper_VmL - Lower_VmL) * (upper_Stoke - Lower_Stoke ) +  Lower_Stoke
 
-    return int(Stoke)    
+    return Stoke    
 
 ## Calculate the proper F value of a G-Code (G0 X100 F??) for a Move command line
 ## total_x =  self.SpinSetting.BVM_RUN_Max_StokeX
-def DB_Get_speed_Fvalue(db, t_stoke, bmp, x1, x2, total_x, t, debug_mod=0):
+def DB_Get_speed_Fvalue(db, t_stoke, bpm, x1, x2, total_x, t, debug_mod=0):
 
     if (x1==x2):
         print ('<<<Error>>> x=0 move F Value is 0.')
@@ -145,7 +145,113 @@ def DB_Get_speed_Fvalue(db, t_stoke, bmp, x1, x2, total_x, t, debug_mod=0):
 
     Stoke= abs(x1-x2) 
 
-    vSecond1000 = int( total_x / Stoke * t * 1000) 
+    ##vSecond1000 = int( total_x / Stoke * t * 1000) 
+
+    #X_Per_Second = t_stoke * 2 * bpm / 60
+
+    #vSecond1000 = t* 1000/t_stoke * total_x  #<880/10>   total_x /  Stoke
+ 
+    vSecond1000 = int(t * 1000/ Stoke * total_x) 
+    
+    if (debug_mod>0) : print ("===> Delta X = %s , t= %s, vSecond1000 = %s " % (Stoke,t, vSecond1000) )
+
+    cursor = db.cursor()
+
+    upper_Fvalue= 0          
+    upper_second1000= 0
+
+    Lower_Fvalue= 0
+    Lower_second1000= 0
+
+    Query_str1 = """Select speed, second1000 from GCodeF_Time where (second1000=%s) order by second1000""" % (vSecond1000) 
+    if (debug_mod>0) : print ('    '+Query_str1)
+    cursor.execute(Query_str1)
+    for row in cursor:
+        Fvalue= row[0]
+        GETsecond1000= row[1] 
+        if (debug_mod>0) : print ('    Fvalue=%s ; second1000=%s' % (Fvalue, GETsecond1000) )
+        return Fvalue
+
+
+    ### Get Upper F Value
+    Query_str1 = """Select speed, second1000 from GCodeF_Time where (second1000<%s) order by second1000 DESC LIMIT 1 """ % (vSecond1000) 
+    if (debug_mod>0) : print ('    '+Query_str1)
+    cursor.execute(Query_str1)
+    for row in cursor:
+        if (debug_mod>0) : print ('    Got upper')
+        upper_Fvalue= row[0]
+        upper_second1000= row[1]
+        if (debug_mod>0) : print ('    upper_Fvalue=%s ; upper_second1000=%s' % (upper_Fvalue, upper_second1000) )  
+
+    ###  vSecond1000 is smaller then second1000 , the speed request is more faster , its beyound the motor limitation.
+    if (upper_Fvalue==0):
+        Fvalue=50000
+        if (debug_mod>0) : print ('    Fvalue=%s' % Fvalue)
+        return Fvalue
+
+
+    ### Get Lower F Value  
+    Query_str1 = """Select speed, second1000 from GCodeF_Time where (second1000>%s) order by second1000 LIMIT 1 """ % (vSecond1000) 
+    if (debug_mod>0) : print ('    '+Query_str1)
+    cursor.execute(Query_str1)
+    for row in cursor:
+        if (debug_mod>0) : print ('    Got Lower')
+        Lower_Fvalue= row[0]
+        Lower_second1000= row[1] 
+        if (debug_mod>0) : print ('    Lower_Fvalue=%s ; Lower_second1000=%s' % (Lower_Fvalue, Lower_second1000) )
+
+    ###  vSecond1000 is lower then lowest DB second1000 , the speed request is more lower ,
+    ###  use the lowest F Value.
+    if (upper_Fvalue==0):
+        Fvalue=2000
+        if (debug_mod>0) : print ('    Fvalue=%s' % Fvalue)
+        return Fvalue
+
+    Fvalue = abs(int ((vSecond1000 - upper_second1000 ) / (Lower_second1000 - upper_second1000) * (upper_Fvalue - Lower_Fvalue ) +  Lower_Fvalue))
+
+    if (debug_mod>0) : print ('    Fvalue=%s' % Fvalue)
+    
+    #coefficient_adj = 1.145 + (25-bpm)/15 * 0.0006
+    # v 600 bpm 12(-1) , 25(-0.20, 26(+2.2) , 27(+2.4)
+    coefficient_adj = 1
+    coefficient_adj1 = 0
+    #if bpm == 12 :
+    #   coefficient_adj1= 0.18880
+    #else:
+    #   coefficient_adj1= (25-bpm)/11.8 * 0.0006 * 25 / (2*bpm)   
+    #coefficient_adj = 1.145+ coefficient_adj1    #( + 0.00060<10>,  0.00073<11>,  0.00073<11>)
+    ##<<<12>>> + (25-bpm)/11.8 * 0.0006 * 25 / (2*bpm)
+    if t_stoke > 63:
+        coefficient_adj = 1 - ( (t_stoke - 63) / (t_stoke * (t_stoke - 63)/6.2) * 0.45)
+
+    Fvalue = int (Fvalue * coefficient_adj)
+
+    if Fvalue > 50000 :
+        Fvalue = 50000 + 9
+    #if Fvalue < 500 :
+    #    Fvalue = 500
+
+    if (debug_mod>0) : print ('    after adj Fvalue=%s, coefficient_adj=%s' % (Fvalue, coefficient_adj) )
+    #print ('    after adj Fvalue=%s, coefficient_adj=%s' % (Fvalue, coefficient_adj) )
+    #print ('t=%f, Stoke=%f , Max Stoke=%f < vSecond1000=%d, Fvalue=%d, coefficient_adj=%f' % (t, Stoke, total_x, vSecond1000, Fvalue, coefficient_adj) )
+
+    return Fvalue
+
+
+def xxDB_Get_speed_Fvalue(db, t_stoke, bpm, x1, x2, total_x, t, debug_mod=0):
+
+    if (x1==x2):
+        print ('<<<Error>>> x=0 move F Value is 0.')
+        Fvalue=0
+        return Fvalue
+
+    Stoke= abs(x1-x2) 
+
+    ##vSecond1000 = int( total_x / Stoke * t * 1000) 
+    vSecond1000 = int( total_x / Stoke * t * 1000)
+
+    vSecond1000 = t/t_stoke * total_x   #<880/10>  
+
     if (debug_mod>0) : print ("===> Delta X = %s , t= %s, vSecond1000 = %s " % (Stoke,t, vSecond1000) )
 
     cursor = db.cursor()
@@ -209,15 +315,124 @@ def DB_Get_speed_Fvalue(db, t_stoke, bmp, x1, x2, total_x, t, debug_mod=0):
     #coefficient_adj = 1+ ((40000+Fvalue)/400000)/3.8
     #coefficient_adj = 0.938  ## 900mL
     #coefficient_adj = 0.85   ## 500mL
-
+    
     #V_mL=self.settings.InHale_VmL
-    coefficient_adj =  0.85 + (t_stoke - 54 ) * 0.00338
+    v100_stoke = 32   
+    v200_stoke = 36
+    v250_stoke = 39 ##
+    v300_stoke = 42
+    v400_stoke = 50
+    v500_stoke = 58
+    v600_stoke = 63
+    v700_stoke = 70
+    v800_stoke = 79
+    v900_stoke = 88
 
-    coefficient_adj = coefficient_adj - (30 - bmp) * 0.0079
+    t_stoke_zero =0
+    t_stoke_bpm20_adj =0
+    t_stoke_bpm25_adj =0
+    t_stoke_bpm30_adj =0
+
+    t_stoke_bpm35_adj =0
+    if (t_stoke - 36 ) <= -4:    ## 100mL
+        coefficient_t_stoke= -0.250  # add value more slow
+        t_stoke_zero = 0
+        if (bpm > 30 and bpm <=35):
+            t_stoke_bpm35_adj = 0.0064  # add value more slow
+    ## 101mL ~ 200mL        
+    elif (t_stoke - 36 ) <= (v200_stoke-36): #(v200_stoke-36)=0
+        t_stoke_zero = -1
+        coefficient_t_stoke=  0.07  # add value more slow
+        if (bpm > 30 and bpm <=35):
+            t_stoke_bpm35_adj = 0.0145  # add value more slow
+    ## 201mL ~ 250mL<Stoke X 39>
+    elif (t_stoke - 36 ) <= (v250_stoke-36):   #(v250_stoke-36)=3
+        t_stoke_zero = 0
+        coefficient_t_stoke=  -0.04  # add value more fast
+        if (bpm > 30 and bpm <=35):
+            t_stoke_bpm35_adj = -0.005  # add value more slow
+    ## 251mL<Stoke X 39> ~ 300mL        
+    elif (t_stoke - 36 ) <= (v300_stoke-36):   #(v300_stoke-36)=6  
+        coefficient_t_stoke=  -0.004   # add value more fast
+        if (bpm > 30 and bpm <=35):
+            t_stoke_bpm35_adj = -0.0065  # add value more fast 
+    ## 301mL ~ 400mL                   
+    elif (t_stoke - 36 ) <= (v400_stoke-36):  
+        coefficient_t_stoke=  0.00700
+        if (bpm > 30 and bpm <=35):
+            t_stoke_bpm35_adj = 0.004
+    ## 401mL ~ 500mL        
+    elif (t_stoke - 36 ) <= (v500_stoke-36):  
+        coefficient_t_stoke=  0.01200
+        if (bpm > 30 and bpm <=35):
+            t_stoke_bpm35_adj = 0.0075
+    ## 501mL ~ 600mL <t_stoke 58.05> ~ 600mL <t_stoke 63>        
+    elif (t_stoke - 36 ) <= (v600_stoke-36):  
+        #print ("501mL ~ 600mL <t_stoke 58.05> ~ 600mL <t_stoke 63>")
+        coefficient_t_stoke=  0.02100
+        if (bpm > 14 and bpm <=20):
+            t_stoke_bpm20_adj =  0.29 + ( 0.263 / (v600_stoke - v500_stoke)) * ((t_stoke-0.05) - v500_stoke)  
+            # add value more slower (t_stoke 63 - 0.55 ; t_stoke 58.05 - 0.29 )  
+        if (bpm > 20 and bpm <=25):                              
+            t_stoke_bpm25_adj = 0.201 + (0.007 / (v600_stoke - v500_stoke)) * ((t_stoke-0.05) - v500_stoke)  
+                                # add value more slower (t_stoke 63 - 0.202 ; t_stoke 58.05 - 0.210         
+        if (bpm > 25 and bpm <=30): 
+            t_stoke_bpm30_adj = 0.022 + (0.008 / (v600_stoke - v500_stoke)) * ((t_stoke-0.05) - v500_stoke)  
+                                # add value more slower (t_stoke 63 - 0.030 ; t_stoke 58.05 - 0.022 )
+            #print ("t_stoke_bpm30_adj=%f" % (t_stoke_bpm30_adj))                                 
+        if (bpm > 30 and bpm <=35):
+            t_stoke_bpm35_adj = 0.391  # + (0.008 / (v600_stoke - v500_stoke)) * ((t_stoke-0.05) - v500_stoke)  
+    ## 601mL ~ 700mL   ## 601 <t_stoke 63.07> ~ 700mL <t_stoke 70>        
+    elif (t_stoke - 36 ) <= (v700_stoke-36): 
+        print (" 601mL ~ 700mL") 
+        coefficient_t_stoke=  0.01600
+        if (bpm > 25 and bpm <=30):
+            t_stoke_bpm35_adj = 0.366  # + (0.008 / (v700_stoke - v600_stoke)) * ((t_stoke-0.05) - v600_stoke)
+                   
+        if (bpm > 30 and bpm <=35):
+            t_stoke_bpm35_adj = 0.0216   # add value more slower 
+            #t_stoke_bpm35_adj = 0.240 + (0.090 / (v700_stoke - v600_stoke)) * ((t_stoke-0.05) - v600_stoke)
+                                  ## add value more slower
+    ## 701mL ~ 800mL        
+    elif (t_stoke - 36 ) <= (v800_stoke-36):   #v800_stoke = 79
+        #print (" 701mL ~ 800mL")
+        coefficient_t_stoke=  0.007500
+        if (bpm > 30 and bpm <=35):
+            t_stoke_bpm35_adj = 0.0652  # + (5.550 / (v800_stoke - v700_stoke)) *  ((t_stoke- 74.5) * 2 / ( (t_stoke-0.05) - v700_stoke) ) 
+            #  t_stoke_bpm35_adj  add value more slower
+    ## 801mL ~ 900mL         
+    elif (t_stoke - 36 ) <= (v900_stoke-36):  
+        print (" 801mL ~ 900mL")
+        coefficient_t_stoke=  0.007500
+    else: 
+        coefficient_t_stoke=  0.007500
+
+    coefficient_adj =  (1 + 0.00045) + ( (t_stoke - 36 + t_stoke_zero ) * coefficient_t_stoke )
+    #coefficient_adj =  coefficient_adj - t_stoke_bpm20_adj - t_stoke_bpm25_adj - t_stoke_bpm30_adj
+    coefficient_adj =  coefficient_adj - t_stoke_bpm20_adj - t_stoke_bpm25_adj - t_stoke_bpm30_adj - t_stoke_bpm35_adj
+
+    if (bpm > 14 and bpm <=20): 
+        coefficient_adj = coefficient_adj + 0.524  - ( 0.5005 * (bpm-15)/5)   # bpm:15 -> 0.524  ; bpm:20 -> 0.0235 
+    if (bpm > 20 and bpm <=25):
+        coefficient_adj = coefficient_adj + 0.312  - ( 0.092 * (bpm-21)/4)  # bpm:21 -> 0.312  ; bpm:25 -> 0.22
+        #coefficient_adj = coefficient_adj - (bpm-15) * (0.052 - (0.0075 * (bpm-21)))    # bpm 25 : (-)0.020 ; bpm 21 : (-)0.07
+    if (bpm > 25 and bpm <=30):
+        coefficient_adj = coefficient_adj + 0.385  - ( 0.028 * (bpm-26)/4)  # bpm:26 -> 0.385  ; bpm:30 -> 0.357
+        #coefficient_adj = coefficient_adj - (bpm-15) * (0.035 - (0.0028 * (bpm-26)))    # bpm 30 : (-)0.0228  ; bpm 26 : (-)0.028
+    if (bpm > 30 and bpm <=35):
+        coefficient_adj = coefficient_adj + 0.0346 - ( 0.250*(bpm-31)/4)  # bpm:31 -> 0.0448  ; bpm:35 -> 0.056
+        #coefficient_adj = coefficient_adj + (bpm-15) * ( 0.0028 - t_stoke_bpm35_adj )
+
+    #bpm 21 , (bpm-15) * (0.052 - (0.0075 * (bpm-21))) = 0.312000
+    #bpm 25 , (bpm-15) * (0.052 - (0.0075 * (bpm-21))) = 0.220000
+    #bpm 26 , (bpm-15) * (0.035 - (0.0028 * (bpm-26))) = 0.385000
+    #bpm 30 , (bpm-15) * (0.035 - (0.0028 * (bpm-26))) = 0.357000
+    #bpm 31 , (bpm-15) * ( 0.0028 - t_stoke_bpm35_adj ) = 0.044800
+    #bpm 35 ,(bpm-15) * ( 0.0028 - t_stoke_bpm35_adj ) = 0.056000
+
 
     #if self.p.online:
     #    self.p.send_now("coefficient_adj = %d%%.") % coefficient_adj
-
 
     Fvalue = int (Fvalue * coefficient_adj)
 
@@ -227,11 +442,44 @@ def DB_Get_speed_Fvalue(db, t_stoke, bmp, x1, x2, total_x, t, debug_mod=0):
         Fvalue = 500
 
     if (debug_mod>0) : print ('    after adj Fvalue=%s, coefficient_adj=%s' % (Fvalue, coefficient_adj) )
+    #print ('    after adj Fvalue=%s, coefficient_adj=%s' % (Fvalue, coefficient_adj) )
+    
+    """
+    if (bpm > 14 and bpm <=20): 
+        coefficient_adj = coefficient_adj + 0.524  - ( 0.5005 * (bpm-15)/5)   # bpm:15 -> 0.524  ; bpm:20 -> 0.0235 
+    if (bpm > 20 and bpm <=25):
+        coefficient_adj = coefficient_adj - (bpm-15) * (0.052 - (0.0075 * (bpm-21)))    # bpm 25 : (-)0.020 ; bpm 21 : (-)0.07
+    if (bpm > 25 and bpm <=30):
+        coefficient_adj = coefficient_adj - (bpm-15) * (0.035 - (0.0028 * (bpm-26)))    # bpm 30 : (-)0.0228  ; bpm 26 : (-)0.028
+    if (bpm > 30 and bpm <=35):
+        coefficient_adj = coefficient_adj + (bpm-15) * ( 0.0028 - t_stoke_bpm35_adj )
 
-    #if Fvalue < 4000 :
-    #   Fvalue = Fvalue + 300 
+    bpm = 21
+    x = (bpm-15) * (0.052 - (0.0075 * (bpm-21))) 
+    print ( 'bpm %d , (bpm-15) * (0.052 - (0.0075 * (bpm-21))) = %f' % (bpm, x))
 
-    return Fvalue
+    bpm = 25
+    x = (bpm-15) * (0.052 - (0.0075 * (bpm-21))) 
+    print ( 'bpm %d , (bpm-15) * (0.052 - (0.0075 * (bpm-21))) = %f' % (bpm, x))
+
+    bpm = 26
+    x = (bpm-15) * (0.035 - (0.0028 * (bpm-26)))
+    print ( 'bpm %d , (bpm-15) * (0.035 - (0.0028 * (bpm-26))) = %f' % (bpm, x))
+
+    bpm = 30
+    x = (bpm-15) * (0.035 - (0.0028 * (bpm-26)))
+    print ( 'bpm %d , (bpm-15) * (0.035 - (0.0028 * (bpm-26))) = %f' % (bpm, x))    
+
+    bpm = 31
+    x = (bpm-15) * ( 0.0028 - t_stoke_bpm35_adj )
+    print ( 'bpm %d , (bpm-15) * ( 0.0028 - t_stoke_bpm35_adj ) = %f' % (bpm, x))
+
+    bpm = 35
+    x = (bpm-15) * ( 0.0028 - t_stoke_bpm35_adj )
+    print ( 'bpm %d ,(bpm-15) * ( 0.0028 - t_stoke_bpm35_adj ) = %f' % (bpm, x))    
+    """
+
+    return Fvalue    
 
 
 ###-End-##################### Add by Roger  2020-04-26  
@@ -1153,43 +1401,53 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         #self.settings._add(SpinSetting("preview_grid_step1", 10., 0, 200, _("Fine grid spacing"), _("Fine Grid Spacing"), "Viewer"), self.update_gviz_params)
 
         self.settings._add(ComboSetting("BVM_Ball_No", "1", ["1", "2", "3"], _("Choice the supported BVM_Ball"), _("Choice the supported BVM_Ball"), "UI"), self.reload_ui)
-        self.settings._add(SpinSetting("Breaths_p_min",  20, 0, 40, _("Breaths Rate/min, 每分鐘呼吸次數"), _("呼吸次數/min, 每分鐘呼吸次數"), "External"))
-        self.settings._add(SpinSetting("InHale_VmL",600, 0,900, _("In-Hale Volumn 空氣容積 (吸氣量)"), _("In-Hale Volumn (吸氣量) 請考量死腔氣量"), "External"))
+        self.settings._add(SpinSetting("Breaths_p_min",  20, 12, 35, _("Breaths Rate/min, 每分鐘呼吸次數"), _("呼吸次數/min, 每分鐘呼吸次數"), "External"))
+        self.settings._add(SpinSetting("InHale_VmL",600, 100,900, _("In-Hale Volumn 空氣容積 (吸氣量)"), _("In-Hale Volumn (吸氣量) 請考量死腔氣量"), "External"))
         self.settings._add(FloatSpinSetting("InHale_ratio", 1, 1, 2, _("(In-Hale吸) time Ratio"), _("In-Hale(吸) VS Ex-Hale(呼) 時間比 ex: 2(0.4s) : 3(0.6s)"), "External"))
         self.settings._add(FloatSpinSetting("ExHale_ratio", 1.5, 1, 3, _("(Ex-Hale呼) time Ratio"), _("In-Hale(吸) VS Ex-Hale(呼) 時間比 ex: 2(0.4s) : 3(0.6s)"), "External"))
         self.settings._add(SpinSetting("BVM_RUN_Max_StokeX", 85, 50, 300, _("BVM_RUN 900mL Stoke X (Max Stoke)"), _("BVM_RUN 900mL Stoke X (Max Stoke)"), "External"))
     
+        #0.05 , 0.05, 0.7, 0.05, 0.05
+        self.settings._add(FloatSpinSetting("InHale0_start_Xratio",  0.01, 0.01, 0.20, _("In-Hale0 Motor star forward Stoke ratio 往前擠壓行程配比"), _("In-Hale0 Motor start forward Stoke ratio 往前擠壓行程配比"), "External1"))
+        self.settings._add(FloatSpinSetting("InHale0_start_Tratio",  0.04, 0.01, 0.20, _("In-Hale0 Motor start time ratio 往前擠壓time配比"), _("In-Hale0 Motor start time ratio 往前擠壓time配比"), "External1")) 
 
-        self.settings._add(FloatSpinSetting("InHale0_start_Xratio",  0.05, 0.01, 0.20, _("In-Hale0 Motor star forward Stoke ratio 往前擠壓行程配比"), _("In-Hale0 Motor start forward Stoke ratio 往前擠壓行程配比"), "External1"))
         self.settings._add(FloatSpinSetting("InHale1_ascend_Xratio", 0.05, 0.01, 0.20, _("In-Hale1 ascending Stoke ratio 升速擠壓行程配比"), _("In-Hale1 ascending Stoke ratio 升速擠壓行程配比"), "External1"))  
-        self.settings._add(FloatSpinSetting("InHale2_stable_Xratio", 0.7, 0.5, 0.8, _("In-Hale2 stable Stoke ratio 穩速擠壓行程配比"), _("In-Hale2 stable Stoke ratio 穩速擠壓行程配比"), "External1"))
-        self.settings._add(FloatSpinSetting("InHale3_HoldPressure_Xratio", 0.1, 0.05, 0.3, _("In-Hale3 HoldPressure Stoke ratio 穩速保壓行程配比"), _("In-Hale3 HoldPresure Stoke ratio 穩速保壓行程配比"), "External1"))          
-        self.settings._add(FloatSpinSetting("InHale4_descend_Xratio", 0.05, 0.01, 0.2, _("In-Hale4 descend Stoke ratio 減速擠壓行程配比"), _("In-Hale4 descend Stoke ratio 減速擠壓行程配比"), "External1"))          
-        self.settings._add(FloatSpinSetting("InHale5_toStop_Xratio", 0.05, 0.01, 0.2, _("In-Hale5 toStop Stoke ratio 擠壓停止行程配比"), _("In-Hale5 toStop Stoke ratio 擠壓停止行程配比"), "External1"))          
-
-
-        self.settings._add(FloatSpinSetting("InHale0_start_Tratio",  0.05, 0.01, 0.20, _("In-Hale0 Motor start time ratio 往前擠壓time配比"), _("In-Hale0 Motor start time ratio 往前擠壓time配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("InHale1_ascend_Tratio",  0.05, 0.01, 0.20, _("In-Hale1 ascending time ratio 升速擠壓time配比"), _("In-Hale1 ascending time ratio 升速擠壓time配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("InHale2_stable_Tratio",  0.7, 0.5, 0.8, _("In-Hale2 stable time ratio 穩速擠壓time配比"), _("In-Hale2 stable time ratio 穩速擠壓time配比"), "External1")) 
+        self.settings._add(FloatSpinSetting("InHale1_ascend_Tratio", 0.05, 0.01, 0.20, _("In-Hale1 ascending time ratio 升速擠壓time配比"), _("In-Hale1 ascending time ratio 升速擠壓time配比"), "External1")) 
+        
+        self.settings._add(FloatSpinSetting("InHale2_stable_Xratio", 0.74, 0.5, 0.8, _("In-Hale2 stable Stoke ratio 穩速擠壓行程配比"), _("In-Hale2 stable Stoke ratio 穩速擠壓行程配比"), "External1"))
+        self.settings._add(FloatSpinSetting("InHale2_stable_Tratio",  0.65, 0.5, 0.8, _("In-Hale2 stable time ratio 穩速擠壓time配比"), _("In-Hale2 stable time ratio 穩速擠壓time配比"), "External1")) 
+        
+        self.settings._add(FloatSpinSetting("InHale3_HoldPressure_Xratio", 0.13, 0.05, 0.3, _("In-Hale3 HoldPressure Stoke ratio 穩速保壓行程配比"), _("In-Hale3 HoldPresure Stoke ratio 穩速保壓行程配比"), "External1"))          
         self.settings._add(FloatSpinSetting("InHale3_HoldPressure_Tratio",  0.1, 0.05, 0.3, _("In-Hale3 HoldPressure time ratio 穩速保壓time配比"), _("In-Hale3 HoldPresure speed ratio 穩速保壓time配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("InHale4_descend_Tratio",  0.05, 0.01, 0.2, _("In-Hale4 descend time ratio 減速擠壓time配比"), _("In-Hale4 descend Stoke time ratio 減速擠壓time配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("InHale5_toStop_Tratio",  0.05, 0.01, 0.2, _("In-Hale5 toStop time ratio 擠壓停止time配比"), _("In-Hale5 toStop time ratio 擠壓停止time配比"), "External1"))
+        
+        self.settings._add(FloatSpinSetting("InHale4_descend_Xratio", 0.05, 0.01, 0.2, _("In-Hale4 descend Stoke ratio 減速擠壓行程配比"), _("In-Hale4 descend Stoke ratio 減速擠壓行程配比"), "External1"))          
+        self.settings._add(FloatSpinSetting("InHale4_descend_Tratio",  0.06, 0.01, 0.2, _("In-Hale4 descend time ratio 減速擠壓time配比"), _("In-Hale4 descend Stoke time ratio 減速擠壓time配比"), "External1")) 
+ 
+        self.settings._add(FloatSpinSetting("InHale5_toStop_Xratio", 0.02, 0.01, 0.2, _("In-Hale5 toStop Stoke ratio 擠壓停止行程配比"), _("In-Hale5 toStop Stoke ratio 擠壓停止行程配比"), "External1")) 
+        self.settings._add(FloatSpinSetting("InHale5_toStop_Tratio",  0.01, 0.01, 0.2, _("In-Hale5 toStop time ratio 擠壓停止time配比"), _("In-Hale5 toStop time ratio 擠壓停止time配比"), "External1"))
 
+        ##
 
-        self.settings._add(FloatSpinSetting("ExHale0_start_Xratio",  0.05, 0.01, 0.20, _("Ex-Hale0 Motor start backward Stoke ratio 往回行程配比"), _("Ex-Hale0 Motor start backward Stoke ratio 往回行程配比"), "External1"))        
-        self.settings._add(FloatSpinSetting("ExHale1_ascend_Xratio", 0.05, 0.01, 0.20, _("Ex-Hale1 ascending Stoke ratio 往回升速行程配比"), _("Ex-Hale1 ascending Stoke ratio 往回升速行程配比"), "External1"))    
-        self.settings._add(FloatSpinSetting("ExHale2_stable_Xratio", 0.7, 0.5, 0.8, _("Ex-Hale2 stable Stoke ratio 穩速往回升速行程配比"), _("Ex-Hale2 stable Stoke ratio 穩速往回升速行程配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("ExHale3_HoldPressure_Xratio", 0.1, 0.05, 0.3, _("Ex-Hale3 HoldPressure Stoke ratio 保壓行程配比"), _("Ex-Hale3 HoldPressure Stoke ratio 保壓行程配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("ExHale4_descend_Xratio", 0.05, 0.01, 0.2, _("Ex-Hale4 descend Stoke ratio 往回減速行程配比"), _("Ex-Hale4 descend Stoke ratio 往回減速行程配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("ExHale5_toStop_Xratio", 0.05, 0.01, 0.2, _("Ex-Hale5 toStop Stoke ratio 往回touch Home行程配比"), _("Ex-Hale5 toStop Stoke ratio 往回touch Home行程配比"), "External1"))       
+        self.settings._add(FloatSpinSetting("ExHale0_start_Xratio",  0.02, 0.01, 0.20, _("Ex-Hale0 Motor start backward Stoke ratio 往回行程配比"), _("Ex-Hale0 Motor start backward Stoke ratio 往回行程配比"), "External2"))        
+        self.settings._add(FloatSpinSetting("ExHale0_start_Tratio",  0.07, 0.01, 0.20, _("Ex-Hale0 Motor start backward time ratio 往回time配比"), _("Ex-Hale0 Motor star backward time ratio 往回time配比"), "External2")) 
 
-        self.settings._add(FloatSpinSetting("ExHale0_start_Tratio",  0.05, 0.01, 0.20, _("Ex-Hale0 Motor start backward time ratio 往回time配比"), _("Ex-Hale0 Motor star backward time ratio 往回time配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("ExHale1_ascend_Tratio",  0.05, 0.01, 0.20, _("Ex-Hale1 ascending time ratio 往回升速time配比"), _("Ex-Hale1 ascending time ratio 往回升速time配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("ExHale2_stable_Tratio",  0.7, 0.5, 0.8, _("Ex-Hale2 stable time ratio 穩速往回升速time配比"), _("Ex-Hale2 stable time ratio 穩速往回升速time配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("ExHale3_HoldPresure_Tratio",  0.1, 0.05, 0.3, _("Ex-Hale3 HoldPresure time ratio hold壓time配比"), _("Ex-Hale3 HoldPresure time ratio hold壓time配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("ExHale4_descend_Tratio",  0.05, 0.01, 0.2, _("Ex-Hale4 descend stime ratio 往回減速time配比"), _("Ex-Hale4 descend time ratio 往回減速time配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("ExHale5_toStop_Tratio",  0.05, 0.01, 0.2, _("Ex-Hale5 toStop time ratio 往回touch Home time配比"), _("Ex-Hale5 toStop time ratio 往回touch Home time配比"), "External1"))
+        self.settings._add(FloatSpinSetting("ExHale1_ascend_Xratio", 0.07, 0.01, 0.20, _("Ex-Hale1 ascending Stoke ratio 往回升速行程配比"), _("Ex-Hale1 ascending Stoke ratio 往回升速行程配比"), "External2"))    
+        self.settings._add(FloatSpinSetting("ExHale1_ascend_Tratio",  0.12, 0.01, 0.20, _("Ex-Hale1 ascending time ratio 往回升速time配比"), _("Ex-Hale1 ascending time ratio 往回升速time配比"), "External2")) 
+        
+        self.settings._add(FloatSpinSetting("ExHale2_stable_Xratio", 0.72, 0.5, 0.8, _("Ex-Hale2 stable Stoke ratio 穩速往回升速行程配比"), _("Ex-Hale2 stable Stoke ratio 穩速往回升速行程配比"), "External2")) 
+        self.settings._add(FloatSpinSetting("ExHale2_stable_Tratio",  0.54, 0.5, 0.8, _("Ex-Hale2 stable time ratio 穩速往回升速time配比"), _("Ex-Hale2 stable time ratio 穩速往回升速time配比"), "External2")) 
+        
 
+        self.settings._add(FloatSpinSetting("ExHale3_HoldPressure_Xratio", 0.05, 0.05, 0.3, _("Ex-Hale3 HoldPressure Stoke ratio 保壓行程配比"), _("Ex-Hale3 HoldPressure Stoke ratio 保壓行程配比"), "External2")) 
+        self.settings._add(FloatSpinSetting("ExHale3_HoldPresure_Tratio",  0.05, 0.05, 0.3, _("Ex-Hale3 HoldPresure time ratio hold壓time配比"), _("Ex-Hale3 HoldPresure time ratio hold壓time配比"), "External2")) 
+        
+
+        self.settings._add(FloatSpinSetting("ExHale4_descend_Xratio", 0.05, 0.01, 0.2, _("Ex-Hale4 descend Stoke ratio 往回減速行程配比"), _("Ex-Hale4 descend Stoke ratio 往回減速行程配比"), "External2")) 
+        self.settings._add(FloatSpinSetting("ExHale4_descend_Tratio",  0.07, 0.01, 0.2, _("Ex-Hale4 descend stime ratio 往回減速time配比"), _("Ex-Hale4 descend time ratio 往回減速time配比"), "External2"))
+
+        self.settings._add(FloatSpinSetting("ExHale5_toStop_Xratio", 0.03, 0.01, 0.2, _("Ex-Hale5 toStop Stoke ratio 往回touch Home行程配比"), _("Ex-Hale5 toStop Stoke ratio 往回touch Home行程配比"), "External2"))       
+        self.settings._add(FloatSpinSetting("ExHale5_toStop_Tratio",  0.15, 0.01, 0.2, _("Ex-Hale5 toStop time ratio 往回touch Home time配比"), _("Ex-Hale5 toStop time ratio 往回touch Home time配比"), "External2"))
+        ##
 
         recentfilessetting = StringSetting("recentfiles", "[]")
         recentfilessetting.hidden = True
@@ -1604,7 +1862,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         filename_mL_bpm_date = '%dmL_%d_%s.GCO' % (V_mL, V_bpm, v_date)
 
         self.Stoke_X = DB_Volumn_Get_Stoke(db, BVM_id, V_mL, debug_mod=0)
-        Line_data=";InHale Volumn %dmL, Stoke X %d, <900mL Stoke X %d>" % (V_mL, self.Stoke_X, self.settings.BVM_RUN_Max_StokeX)
+        Line_data=";InHale Volumn %dmL, Stoke X %.2f, <900mL Stoke X %d>" % (V_mL, self.Stoke_X, self.settings.BVM_RUN_Max_StokeX)
         Gcode_Lines.update( {'0' : Line_data} )
         message = _("echo : %s") % (Gcode_Lines.get('0'))
         self.log(message)
