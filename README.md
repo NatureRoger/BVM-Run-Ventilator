@@ -1,7 +1,8 @@
 # BVM-run 0.1 Alpha
     This version of BVM-run needs Python 3 and wxPython 4 and pysqlite3.
     
-    [![Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/youtube_image001.jpg)](https://www.youtube.com/watch?v=xGEwENa0d8M)
+    [![Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/youtube_image001.jpg)]
+    (https://www.youtube.com/watch?v=xGEwENa0d8M)
 
     ![FW_Software Block Diagram](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/FW_Software_BlockDiagram.jpg)
 
