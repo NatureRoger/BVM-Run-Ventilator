@@ -12,6 +12,9 @@
     BVM-run FirmWare is base on Marlin 3D Printer Firmware 2.0.x
     https://github.com/MarlinFirmware/Marlin
 
+    the configuration files for BVM-run for your reference
+    https://github.com/NatureRoger/BVM-Run-Ventilator/tree/master/FirmWare/Marlin-2.0.x%20Config%20files
+
     ​​Electrical Hardware : Arduino Mega2560 + RAMPS 1.4  
     https://wiki.keyestudio.com/Ks0091_keyestudio_3D_Printer_Kit_RAMPS_1.4_%2B_Mega_2560_%2B_5x_A4988_%2B_LCD_2004_Smart_Controller
 
