@@ -21,7 +21,6 @@
     42 Stepper motor  42BYGH60  1:13.7 ( (USE MKS TB6600 instead of 4988 and with 24V3A Power Center)
     https://imall.com/product/42-Stepper-motor-12v-17HS6401-1.7A-42BYGH60-Printer-Carving-Machine/Home-Improvement-Electrical-Equipments-Supplies-Motors-Parts/aliexpress.com/32920203573/144-16201795/en
 
-
     Ks0154 keyestudio Mega Pololu Shield (RAMPS 1.4 )
     ​​PINOUT Instruction
     ​​https://wiki.keyestudio.com/Ks0154_keyestudio_Mega_Pololu_Shield_(RAMPS_1.4_)
@@ -29,7 +28,10 @@
     MKS TB6600
     https://reprap.org/wiki/MKS_TB6600
 
-    OSMS-Taiwan Ventilator Team Nots 
+    24 Volt 3 Amp Power Adapter takes an AC INPUT of 100-240V and gives 24V 3A DC output
+    https://www.electronicscomp.com/24v-3a-dc-power-adapter-india
+
+    OSMS-Taiwan Ventilator Team Notes 
     (台灣開源呼吸機研究團隊 共同筆記)
     https://paper.dropbox.com/doc/--A0Q_d~d4s7mIbPAndNXi7oz2Ag-XY6pra058VnWddddHXFz7
 
