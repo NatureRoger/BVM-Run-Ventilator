@@ -2,8 +2,8 @@ setup on osx:
 (install python 3.6)
 (install python extension compile environment, this is automagically done if you have xcode)
 (install git)
-git clone http://github.com/kliment/Printrun.git
-cd Printrun
+git clone https://github.com/NatureRoger/BVM-Run-Ventilator.git
+cd BVM-Run-Ventilator
 git pull
 python3 -m venv v3
 . ./v3/bin/activate
@@ -32,8 +32,8 @@ setup on windows:
 (install python 3.6)
 (install python extension compile environment, see https://wiki.python.org/moin/WindowsCompilers )
 (install git)
-git clone http://github.com/kliment/Printrun.git
-cd Printrun
+git clone https://github.com/NatureRoger/BVM-Run-Ventilator.git
+cd BVM-Run-Ventilator
 git pull
 \path\to\python3\python -m venv v3
 v3\Scripts\activate
