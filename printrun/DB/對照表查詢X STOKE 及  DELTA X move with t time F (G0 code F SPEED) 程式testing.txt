@@ -1,0 +1,511 @@
+
+D:\WIN10-Python36-wxPython\Printrun-master\printrun\DB>python  sqlite3_db_functions_test.py
+Get the Stoke X via the Air Volumn mL squided out
+<<<Error>>> V_mL Must under 900mL , force it to 900mL!
+Volumn = 910 ; x = 221
+Volumn = 885 ; x = 218
+Volumn = 785 ; x = 201
+Volumn = 685 ; x = 165
+Volumn = 585 ; x = 140
+Volumn = 485 ; x = 75
+Volumn = 385 ; x = 68
+Volumn = 285 ; x = 61
+Volumn = 185 ; x = 52
+
+
+Get G-Code G0 Move speed F value VIA Delta(X) and within t <sec>
+===> Delta X = 221 , vSecond1000 = 900
+    Select speed, second1000 from GCodeF_Time where (second1000=900) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<900) order by second1000 DESC LIMIT 1
+    Got upper
+    upper_Fvalue=17500 ; upper_second1000=814
+    Select speed, second1000 from GCodeF_Time where (second1000>900) order by second1000 LIMIT 1
+    Got Lower
+    Lower_Fvalue=15000 ; Lower_second1000=948
+    Fvalue=16604
+    after adj Fvalue=18815, coefficient_adj=1.133208
+x1 = 0 ; x2 = 221 ; Delta x = 221; t = 0.9s => F=18815 (vSecond1000=900)
+===> Delta X = 221 , vSecond1000 = 800
+    Select speed, second1000 from GCodeF_Time where (second1000=800) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<800) order by second1000 DESC LIMIT 1
+    Got upper
+    upper_Fvalue=20000 ; upper_second1000=799
+    Select speed, second1000 from GCodeF_Time where (second1000>800) order by second1000 LIMIT 1
+    Got Lower
+    Lower_Fvalue=17500 ; Lower_second1000=814
+    Fvalue=17666
+    after adj Fvalue=20056, coefficient_adj=1.135332
+x1 = 0 ; x2 = 221 ; Delta x = 221; t = 0.8s => F=20056 (vSecond1000=800)
+===> Delta X = 221 , vSecond1000 = 700
+    Select speed, second1000 from GCodeF_Time where (second1000=700) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<700) order by second1000 DESC LIMIT 1
+    Fvalue=50000
+x1 = 0 ; x2 = 221 ; Delta x = 221; t = 0.7s => F=50000 (vSecond1000=700)
+===> Delta X = 221 , vSecond1000 = 400
+    Select speed, second1000 from GCodeF_Time where (second1000=400) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<400) order by second1000 DESC LIMIT 1
+    Fvalue=50000
+x1 = 0 ; x2 = 221 ; Delta x = 221; t = 0.4s => F=50000 (vSecond1000=400)
+===> Delta X = 192 , vSecond1000 = 460
+    Select speed, second1000 from GCodeF_Time where (second1000=460) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<460) order by second1000 DESC LIMIT 1
+    Fvalue=50000
+x1 = 8 ; x2 = 200 ; Delta x = 192; t = 0.4s => F=50000 (vSecond1000=460)
+===> Delta X = 182 , vSecond1000 = 485
+    Select speed, second1000 from GCodeF_Time where (second1000=485) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<485) order by second1000 DESC LIMIT 1
+    Fvalue=50000
+x1 = 8 ; x2 = 190 ; Delta x = 182; t = 0.4s => F=50000 (vSecond1000=485)
+===> Delta X = 172 , vSecond1000 = 513
+    Select speed, second1000 from GCodeF_Time where (second1000=513) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<513) order by second1000 DESC LIMIT 1
+    Fvalue=50000
+x1 = 8 ; x2 = 180 ; Delta x = 172; t = 0.4s => F=50000 (vSecond1000=513)
+===> Delta X = 142 , vSecond1000 = 622
+    Select speed, second1000 from GCodeF_Time where (second1000=622) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<622) order by second1000 DESC LIMIT 1
+    Fvalue=50000
+x1 = 8 ; x2 = 150 ; Delta x = 142; t = 0.4s => F=50000 (vSecond1000=622)
+===> Delta X = 182 , vSecond1000 = 607
+    Select speed, second1000 from GCodeF_Time where (second1000=607) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<607) order by second1000 DESC LIMIT 1
+    Fvalue=50000
+x1 = 8 ; x2 = 190 ; Delta x = 182; t = 0.5s => F=50000 (vSecond1000=607)
+===> Delta X = 172 , vSecond1000 = 642
+    Select speed, second1000 from GCodeF_Time where (second1000=642) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<642) order by second1000 DESC LIMIT 1
+    Fvalue=50000
+x1 = 8 ; x2 = 180 ; Delta x = 172; t = 0.5s => F=50000 (vSecond1000=642)
+===> Delta X = 142 , vSecond1000 = 778
+    Select speed, second1000 from GCodeF_Time where (second1000=778) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<778) order by second1000 DESC LIMIT 1
+    Got upper
+    upper_Fvalue=50000 ; upper_second1000=768
+    Select speed, second1000 from GCodeF_Time where (second1000>778) order by second1000 LIMIT 1
+    Got Lower
+    Lower_Fvalue=45000 ; Lower_second1000=786
+    Fvalue=47777
+    after adj Fvalue=50009, coefficient_adj=1.195554
+x1 = 8 ; x2 = 150 ; Delta x = 142; t = 0.5s => F=50009 (vSecond1000=778)
+===> Delta X = 142 , vSecond1000 = 1245
+    Select speed, second1000 from GCodeF_Time where (second1000=1245) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<1245) order by second1000 DESC LIMIT 1
+    Got upper
+    upper_Fvalue=12500 ; upper_second1000=1134
+    Select speed, second1000 from GCodeF_Time where (second1000>1245) order by second1000 LIMIT 1
+    Got Lower
+    Lower_Fvalue=10000 ; Lower_second1000=1376
+    Fvalue=11146
+    after adj Fvalue=12509, coefficient_adj=1.122292
+x1 = 8 ; x2 = 150 ; Delta x = 142; t = 0.8s => F=12509 (vSecond1000=1245)
+===> Delta X = 122 , vSecond1000 = 1449
+    Select speed, second1000 from GCodeF_Time where (second1000=1449) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<1449) order by second1000 DESC LIMIT 1
+    Got upper
+    upper_Fvalue=10000 ; upper_second1000=1376
+    Select speed, second1000 from GCodeF_Time where (second1000>1449) order by second1000 LIMIT 1
+    Got Lower
+    Lower_Fvalue=9000 ; Lower_second1000=1546
+    Fvalue=9429
+    after adj Fvalue=10549, coefficient_adj=1.118858
+x1 = 8 ; x2 = 130 ; Delta x = 122; t = 0.8s => F=10549 (vSecond1000=1449)
+===> Delta X = 102 , vSecond1000 = 1733
+    Select speed, second1000 from GCodeF_Time where (second1000=1733) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<1733) order by second1000 DESC LIMIT 1
+    Got upper
+    upper_Fvalue=8000 ; upper_second1000=1722
+    Select speed, second1000 from GCodeF_Time where (second1000>1733) order by second1000 LIMIT 1
+    Got Lower
+    Lower_Fvalue=7000 ; Lower_second1000=1966
+    Fvalue=7045
+    after adj Fvalue=7848, coefficient_adj=1.11409
+x1 = 8 ; x2 = 110 ; Delta x = 102; t = 0.8s => F=7848 (vSecond1000=1733)
+===> Delta X = 150 , vSecond1000 = 884
+    Select speed, second1000 from GCodeF_Time where (second1000=884) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<884) order by second1000 DESC LIMIT 1
+    Got upper
+    upper_Fvalue=17500 ; upper_second1000=814
+    Select speed, second1000 from GCodeF_Time where (second1000>884) order by second1000 LIMIT 1
+    Got Lower
+    Lower_Fvalue=15000 ; Lower_second1000=948
+    Fvalue=16305
+    after adj Fvalue=18467, coefficient_adj=1.1326100000000001
+x1 = 0 ; x2 = 150 ; Delta x = 150; t = 0.6s => F=18467 (vSecond1000=884)
+===> Delta X = 100 , vSecond1000 = 1325
+    Select speed, second1000 from GCodeF_Time where (second1000=1325) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<1325) order by second1000 DESC LIMIT 1
+    Got upper
+    upper_Fvalue=12500 ; upper_second1000=1134
+    Select speed, second1000 from GCodeF_Time where (second1000>1325) order by second1000 LIMIT 1
+    Got Lower
+    Lower_Fvalue=10000 ; Lower_second1000=1376
+    Fvalue=11973
+    after adj Fvalue=13457, coefficient_adj=1.1239460000000001
+x1 = 0 ; x2 = 100 ; Delta x = 100; t = 0.6s => F=13457 (vSecond1000=1325)
+===> Delta X = 80 , vSecond1000 = 1657
+    Select speed, second1000 from GCodeF_Time where (second1000=1657) order by second1000
+    Select speed, second1000 from GCodeF_Time where (second1000<1657) order by second1000 DESC LIMIT 1
+    Got upper
+    upper_Fvalue=9000 ; upper_second1000=1546
+    Select speed, second1000 from GCodeF_Time where (second1000>1657) order by second1000 LIMIT 1
+    Got Lower
+    Lower_Fvalue=8000 ; Lower_second1000=1722
+    Fvalue=8630
+    after adj Fvalue=9641, coefficient_adj=1.11726
+x1 = 0 ; x2 = 80 ; Delta x = 80; t = 0.6s => F=9641 (vSecond1000=1657)
+
+
+
+==================================================================
+### sqlite3_db_functions_test.py
+
+# This file is part of the BVM-run Ventilator suite.
+#
+# Printrun is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Printrun is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Printrun.  If not, see <http://www.gnu.org/licenses/>.
+
+
+import sqlite3
+
+global db
+db = sqlite3.connect('OSCMSTAIWAN.db')
+
+global debug_mod
+debug_mod =0
+
+## Get Stoke (X value) from Calibrated  Strok_Volumn mapping table
+def DB_Volumn_Get_Stoke(db, BVM_id, V_mL, debug_mod=0):
+
+    Lower_id= 0
+    Lower_VmL= 0
+    Lower_Stoke= 0
+
+    upper_id= 0
+    upper_Stoke= 0          
+    upper_VmL= 0
+
+    cursor = db.cursor()
+    ## Search Stoke by the Volumn value
+    if(V_mL> 900) :
+        print ('<<<Error>>> V_mL Must under 900mL , force it to 900mL!')
+        V_mL = 900
+
+    Query_str1 = """Select id, Stoke, Volumn from Strok_Volumn where (id=%s and Volumn=%s) order by Volumn""" % (BVM_id, V_mL)         
+    if (debug_mod>0) : print (Query_str1)
+    cursor.execute(Query_str1) 
+
+    for row in cursor:
+        if (debug_mod>0) : print ("BVM_id = %s" % row[0])
+        if (debug_mod>0) : print ("Stoke  = %s" % row[1])
+        if (debug_mod>0) : print ("Volumn = %s" % row[2])
+        return row[1]
+
+
+    ### Get Upper Strok 
+    Query_str1 = """Select id, Stoke, Volumn from Strok_Volumn where (id=%s and Volumn>%s) order by Volumn LIMIT 1""" % (BVM_id, V_mL)
+    if (debug_mod>0) : print (Query_str1)
+    cursor.execute(Query_str1)
+
+    for row in cursor:
+        if (debug_mod>0) : print ('Got upper')
+        upper_id= row[0]
+        upper_Stoke= row[1]         
+        upper_VmL= row[2]
+
+    ### Get Lower Strok
+    Query_str1 = """Select id, Stoke, Volumn from Strok_Volumn where (id=%s and Volumn<%s) order by Volumn DESC LIMIT 1""" % (BVM_id, V_mL)
+    if (debug_mod>0) : print (Query_str1)
+    cursor.execute(Query_str1)
+
+    for row in cursor:
+        if (debug_mod>0) : print ('Got Lower')
+        Lower_id= row[0]            
+        Lower_Stoke= row[1]         
+        Lower_VmL= row[2]
+
+    if (upper_VmL ==0 and Lower_VmL ==0):
+        Stoke =0
+    else:
+        Stoke =  (V_mL - Lower_VmL ) / (upper_VmL - Lower_VmL) * (upper_Stoke - Lower_Stoke ) +  Lower_Stoke
+
+    return int(Stoke)    
+
+
+## Calculate the proper F value of a G-Code (G0 X100 F??) for a Move command line
+def DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod=0):
+
+    if (x1==x2):
+        print ('<<<Error>>> x=0 move F Value is 0.')
+        Fvalue=0
+        return Fvalue
+
+    Stoke= abs(x1-x2) 
+
+    vSecond1000 = int( total_x / Stoke * t * 1000) 
+    if (debug_mod>0) : print ("===> Delta X = %s , vSecond1000 = %s " % (Stoke, vSecond1000) )
+
+    cursor = db.cursor()
+
+    upper_Fvalue= 0          
+    upper_second1000= 0
+
+    Lower_Fvalue= 0
+    Lower_second1000= 0
+
+    Query_str1 = """Select speed, second1000 from GCodeF_Time where (second1000=%s) order by second1000""" % (vSecond1000) 
+    if (debug_mod>0) : print ('    '+Query_str1)
+    cursor.execute(Query_str1)
+    for row in cursor:
+        Fvalue= row[0]
+        GETsecond1000= row[1] 
+        if (debug_mod>0) : print ('    Fvalue=%s ; second1000=%s' % (Fvalue, GETsecond1000) )
+        return Fvalue
+
+
+    ### Get Upper F Value
+    Query_str1 = """Select speed, second1000 from GCodeF_Time where (second1000<%s) order by second1000 DESC LIMIT 1 """ % (vSecond1000) 
+    if (debug_mod>0) : print ('    '+Query_str1)
+    cursor.execute(Query_str1)
+    for row in cursor:
+        if (debug_mod>0) : print ('    Got upper')
+        upper_Fvalue= row[0]
+        upper_second1000= row[1]
+        if (debug_mod>0) : print ('    upper_Fvalue=%s ; upper_second1000=%s' % (upper_Fvalue, upper_second1000) )  
+
+    ###  vSecond1000 is smaller then second1000 , the speed request is more faster , its beyound the motor limitation.
+    if (upper_Fvalue==0):
+        Fvalue=50000
+        if (debug_mod>0) : print ('    Fvalue=%s' % Fvalue)
+        return Fvalue
+
+
+    ### Get Lower F Value  
+    Query_str1 = """Select speed, second1000 from GCodeF_Time where (second1000>%s) order by second1000 LIMIT 1 """ % (vSecond1000) 
+    if (debug_mod>0) : print ('    '+Query_str1)
+    cursor.execute(Query_str1)
+    for row in cursor:
+        if (debug_mod>0) : print ('    Got Lower')
+        Lower_Fvalue= row[0]
+        Lower_second1000= row[1] 
+        if (debug_mod>0) : print ('    Lower_Fvalue=%s ; Lower_second1000=%s' % (Lower_Fvalue, Lower_second1000) )
+
+    ###  vSecond1000 is lower then lowest DB second1000 , the speed request is more lower ,
+    ###  use the lowest F Value.
+    if (upper_Fvalue==0):
+        Fvalue=2000
+        if (debug_mod>0) : print ('    Fvalue=%s' % Fvalue)
+        return Fvalue
+
+
+    #Fvalue =  int(abs( t*1000 - Lower_second1000 ) / abs(upper_second1000 - Lower_second1000) * (upper_Fvalue - Lower_Fvalue ) +  Lower_Fvalue) 
+    Fvalue = int ((vSecond1000 - upper_second1000 ) / (Lower_second1000 - upper_second1000) * (upper_Fvalue - Lower_Fvalue ) +  Lower_Fvalue)
+
+    if (debug_mod>0) : print ('    Fvalue=%s' % Fvalue)
+    coefficient_adj = 1+ (50000+Fvalue)/500000 
+    Fvalue = int (Fvalue * coefficient_adj)
+
+    if Fvalue > 50000 :
+        Fvalue = 50000 + 9
+
+    if (debug_mod>0) : print ('    after adj Fvalue=%s, coefficient_adj=%s' % (Fvalue, coefficient_adj) )
+
+    #if Fvalue < 4000 :
+    #   Fvalue = Fvalue + 300 
+
+    return Fvalue
+
+
+###-End-##################### Add by Roger  2020-04-26  
+
+
+#str(DB_Volumn_Get_Stoke(db, 2, 801, 0))
+debug_mod=0   # CHANGE TO 1  for more details variables print out for debugging
+
+print ('Get the Stoke X via the Air Volumn mL squided out')
+Volumn=910
+x = DB_Volumn_Get_Stoke(db, 2,Volumn)
+print ('Volumn = %s ; x = %s ' % (Volumn , x ))
+
+Volumn =885
+x = DB_Volumn_Get_Stoke(db, 2,Volumn)
+print ('Volumn = %s ; x = %s ' % (Volumn , x ))
+
+Volumn =785
+x = DB_Volumn_Get_Stoke(db, 2,Volumn)
+print ('Volumn = %s ; x = %s ' % (Volumn , x ))
+
+Volumn =685
+x = DB_Volumn_Get_Stoke(db, 2,Volumn)
+print ('Volumn = %s ; x = %s ' % (Volumn , x ))
+
+Volumn =585
+x = DB_Volumn_Get_Stoke(db, 2,Volumn)
+print ('Volumn = %s ; x = %s ' % (Volumn , x ))
+
+Volumn =485
+x = DB_Volumn_Get_Stoke(db, 2,Volumn)
+print ('Volumn = %s ; x = %s ' % (Volumn , x ))
+
+Volumn =385
+x = DB_Volumn_Get_Stoke(db, 2,Volumn)
+print ('Volumn = %s ; x = %s ' % (Volumn , x ))
+
+Volumn =285
+x = DB_Volumn_Get_Stoke(db, 2,Volumn)
+print ('Volumn = %s ; x = %s ' % (Volumn , x ))
+
+Volumn =185
+x = DB_Volumn_Get_Stoke(db, 2,Volumn)
+print ('Volumn = %s ; x = %s ' % (Volumn , x ))
+
+###
+
+debug_mod=1  # CHANGE TO 1  for more details variables print out for debugging
+
+print ('\n\nGet G-Code G0 Move speed F value VIA Delta(X) and within t <sec>')
+
+total_x = 221  ## 擠壓900mL 的 X STOKE Value 
+
+x1= 0
+x2= 221
+t = 0.9
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+x1= 0
+x2= 221
+t = 0.8
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+x1= 0
+x2= 221
+t = 0.7
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+
+x1= 0
+x2= 221
+t = 0.4
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+x1= 8
+x2= 200
+t = 0.4
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+x1= 8
+x2= 190
+t = 0.4
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+x1= 8
+x2= 180
+t = 0.4
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+
+x1= 8
+x2= 150
+t = 0.4
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+#..
+
+x1= 8
+x2= 190
+t = 0.5
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+x1= 8
+x2= 180
+t = 0.5
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+x1= 8
+x2= 150
+t = 0.5
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+#..
+
+x1= 8
+x2= 150
+t = 0.8
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+x1= 8
+x2= 130
+t = 0.8
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+x1= 8
+x2= 110
+t = 0.8
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+#..
+
+x1= 0
+x2= 150
+t = 0.6
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+x1= 0
+x2= 100
+t = 0.6
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+x1= 0
+x2= 80
+t = 0.6
+vSecond1000 = int( total_x / (abs(x2-x1)) * t * 1000)
+f=DB_Get_speed_Fvalue(db, x1, x2, total_x, t, debug_mod)
+print ('x1 = %s ; x2 = %s ; Delta x = %s; t = %ss => F=%s (vSecond1000=%s) ' % (x1 , x2, abs(x2-x1), t, f, vSecond1000 ))
+
+#db.commit()
+db.close()
+
+exit(0)
+
+
