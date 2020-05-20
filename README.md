@@ -5,6 +5,34 @@
 
     ![FW_Software Block Diagram](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/FW_Software_BlockDiagram.jpg)
 
+    BVM-run machinery GH E-Vent Open Source Link 
+    (擠壓甦醒球機構件BOM List and 3D Print files 開源)
+    https://sites.google.com/view/tgh-e-vent/?fbclid=IwAR2e0ypNQm938C6Apma3cTpSWR-FYaKgd5Ra4D2wA0aeUNozWgsnx262OU0
+
+    BVM-run FirmWare is base on Marlin 3D Printer Firmware 2.0.x
+    https://github.com/MarlinFirmware/Marlin
+
+    ​​Electrical Hardware : Arduino Mega2560 + RAMPS 1.4  
+    https://wiki.keyestudio.com/Ks0091_keyestudio_3D_Printer_Kit_RAMPS_1.4_%2B_Mega_2560_%2B_5x_A4988_%2B_LCD_2004_Smart_Controller
+
+    42 Stepper motor 42BYGH60 馬達長60MM 1.6N 減速選用 1:13.7
+    https://goods.ruten.com.tw/item/show?21822084515222=
+
+    42 Stepper motor  42BYGH60  1:13.7 ( (USE MKS TB6600 instead of 4988 and with 24V3A Power Center)
+    https://imall.com/product/42-Stepper-motor-12v-17HS6401-1.7A-42BYGH60-Printer-Carving-Machine/Home-Improvement-Electrical-Equipments-Supplies-Motors-Parts/aliexpress.com/32920203573/144-16201795/en
+
+
+    Ks0154 keyestudio Mega Pololu Shield (RAMPS 1.4 )
+    ​​PINOUT Instruction
+    ​​https://wiki.keyestudio.com/Ks0154_keyestudio_Mega_Pololu_Shield_(RAMPS_1.4_)
+
+    MKS TB6600
+    https://reprap.org/wiki/MKS_TB6600
+
+    OSMS-Taiwan Ventilator Team Nots 
+    (台灣開源呼吸機研究團隊 共同筆記)
+    https://paper.dropbox.com/doc/--A0Q_d~d4s7mIbPAndNXi7oz2Ag-XY6pra058VnWddddHXFz7
+
 # PRINTRUN 2.X
 
 The master branch holds the development of Printrun 2.x. This new version of Printrun supports Python 3 and wxPython 4. All new features and developments should be merged to it.

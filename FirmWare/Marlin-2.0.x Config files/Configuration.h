@@ -17,7 +17,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *     C:\Users\Roger Ông\Documents\Arduino
+ *      
  */
 #pragma once
 
@@ -135,7 +135,7 @@
 
 // Name displayed in the LCD "Ready" message and Info menu
 //#define CUSTOM_MACHINE_NAME "3D Printer"
-#define CUSTOM_MACHINE_NAME "Roger3DPrint"
+#define CUSTOM_MACHINE_NAME "(TW) BVM-run"
 
 // Printer's unique ID, used by some programs to differentiate between machines.
 // Choose your own or use a service like http://www.uuidgenerator.net/version4
