@@ -2,7 +2,7 @@
     This version of BVM-run needs Python 3 and wxPython 4 and pysqlite3.
     
     FW_Software Block Diagram
-    https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/FW_Software_BlockDiagram.jpg
+    ![Full System](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/FW_Software_BlockDiagram.jpg?raw=true)
     
 
 # PRINTRUN 2.X
