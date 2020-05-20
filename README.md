@@ -33,7 +33,7 @@ Note for OSX users: if OSX tells you the file is corrupted, you don't need to re
 ## Linux
 ### Ubuntu/Debian
 
-There is currently no package for Printrun 2. It must be [run from source](https://github.com/kliment/Printrun/tree/master#running-from-source).
+There is currently no package for Printrun 2. It must be [run from source](https://github.com/NatureRoger/BVM-Run-Ventilator/).
 
 ### Chrome OS 
 
@@ -98,13 +98,13 @@ The following section assumes Linux. Please see specific instructions for Window
 
 
 ```console
-$ git clone https://github.com/kliment/Printrun.git  # clone the repository
+$ git clone https://github.com/NatureRoger/BVM-Run-Ventilator.git  # clone the repository
 $ cd Printrun  # change to Printrun directory
 $ python3 -m venv venv  # create an virtual environment
 $ . venv/bin/activate  # activate the virtual environment (notice the space after the dot)
 (venv) $ python -m pip install https://extras.wxpython.org/wxPython4/extras/linux/gtk3/fedora-27/wxPython-4.0.1-cp36-cp36m-linux_x86_64.whl  # replace the link with yours
 (venv) $ python -m pip install -r requirements.txt  # intall the rest of dependencies
-(venv) $ python pronterface.py  # run Pronterface
+(venv) $ python pronterface.py  # run Pronterface (BVM-Run-Ventilator)
 ```
 
 ### Cython-based G-Code parser
@@ -140,8 +140,8 @@ pip3 install --user pyglet
 Install git, clone this repository:
 ```
 sudo apt install git
-git clone https://github.com/kliment/Printrun.git
-cd Printrun
+git clone https://github.com/NatureRoger/BVM-Run-Ventilator.git
+cd BVM-Run-Ventilator
 ```
 
 ### Windows
@@ -178,32 +178,6 @@ The command box recognizes all pronsole commands, but has no tabcompletion.
 
 If you want to load stl files, you need to install a slicing program such as Slic3r or Skeinforge and add its path to the settings.
 
-#### Slic3r integration
-
-To invoke Slic3r directly from Pronterface your slicing command (_Settings_ > _Options_ > _External Commands_ > _Slice Command_) should look something like `slic3r $s -o $o`. If Slic3r is properly installed "slic3r" will suffice, otherwise, replace it with the full path to Slic3r's executable.
-
-If the Slic3r integration option (_Settings_ > _Options_ > _User interface_ > _Enable Slic3r integration_) is checked a new menu will appear after application restart which will allow you to choose among your previously saved Slic3r Print/Filament/Printer settings.
-
-## USING PRONSOLE
-
-To use pronsole, you need:
-
-  * Python 3 (ideally 3.6),
-  * pyserial (or python3-serial on ubuntu/debian) and
-  * pyreadline (not needed on Linux)
-
-Start pronsole and you will be greeted with a command prompt. Type help to view the available commands.
-All commands have internal help, which you can access by typing "help commandname", for example "help connect"
-
-If you want to load stl files, you need to put a version of skeinforge (doesn't matter which one) in a folder called "skeinforge".
-The "skeinforge" folder must be in the same folder as pronsole.py
-
-## USING PRINTCORE
-
-To use printcore you need Python 3 (ideally 3.6) and pyserial (or python3-serial on ubuntu/debian)
-See pronsole for an example of a full-featured host, the bottom of printcore.py for a simple command-line
-sender, or the following code example:
-
 ```python
 #to send a file of gcode to the printer
 from printrun.printcore import printcore
@@ -220,24 +194,6 @@ p.resume()
 p.disconnect() # this is how you disconnect from the printer once you are done. This will also stop running prints.
 ```
 
-## PLATERS
-
-Printrun provides two platers: a STL plater (```plater.py```) and a G-Code plater (```gcodeplater.py```).
-
-## 3D VIEWER CONTROLS
-
-When the 3D viewer is enabled, the controls are the following:
-- Mousewheel: zoom (Control reduces the zoom change steps)
-- Shift+mousewheel: explore layers (in print gcode view ; Control key makes layer change by increments of 10 instead of 1) or rotate object (in platers)
-- Left-click dragging: rotate view
-- Right-click dragging: pan view
-- Shift + left-click dragging: move object (in platers)
-- Page up/down keys: zoom (Control reduces the zoom change steps)
-- Up/down keys: explore layers
-- R key: reset view
-- F key: fit view to display entire print
-- C key: toggle "display current layer only" mode (in print gcode view)
-
 ## RPC SERVER
 
 ```pronterface``` and ```pronsole``` start a RPC server, which runs by default
@@ -252,34 +208,6 @@ print(rpc.status())
 ```
 
 ## CONFIGURATION
-
-### Build dimensions
-
-Build dimensions can be specified using the build_dimensions option (which can
-be graphically edited in Pronterface settings). This option is formed of 9 parameters:
-3 for the build volume dimensions, 3 for the build volume coordinate system
-offset minimum, 3 for the endstop positions.
-
-The default value is `200x200x100+0+0+0+0+0+0`, which corresponds to a
-200x200mm (width x height) bed with 100mm travel in Z (there are the first
-three numbers) and no offset. The absolute coordinates system origin (0,0,0) is
-at the bottom left corner on the bed surface, and the top right corner on the
-bed surface is (200,200,0).
-
-A common practice is to have the origin of the coordinate system (0,0,0) at the
-center of the bed surface. This is achieved by using the next three parameters,
-for instance with `200x200x100-100-100+0+0+0+0`.
-In this case, the bottom left corner of the bed will be at (-100,-100,0) and
-the top right one at (100,100,0).
-
-These two sets of settings should be sufficient for most people. However, for
-some specific complicated setups and GCodes and some features, we might also
-need the endstops positions for perfect display. These positions (which are
-usually 0,0,0, so if you don't know you probably have a standard setup) are
-specified in absolute coordinates, so if you have your bed starting at
-(-100,-100,0) and your endstops are 10mm away from the bed left and right and
-the Z endstop 5mm above the bed, you'll want to set the endstops positions to
-(-110,-110,5) for this option.
 
 ## USING MACROS AND CUSTOM BUTTONS
 
