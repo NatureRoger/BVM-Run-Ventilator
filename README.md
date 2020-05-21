@@ -48,9 +48,7 @@
 
 ![Screen Shot -3](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/Creat_Gcode.png)
 
-![Screen Shot -4](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/Creat_Gcode.png)
-
-![Screen Shot -5](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/LoadFile.png)
+![Screen Shot -4](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/LoadFile.png)
 
 # PRINTRUN 2.X
 
