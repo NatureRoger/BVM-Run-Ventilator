@@ -17,7 +17,7 @@ Breaths Rate settings change Operation video
     BVM-run FirmWare is base on Marlin 3D Printer Firmware 2.0.x
     https://github.com/MarlinFirmware/Marlin
 
-    the configuration files for BVM-run for your reference
+    The configuration files of BVM-run FirmWare for your reference
     https://github.com/NatureRoger/BVM-Run-Ventilator/tree/master/FirmWare/Marlin-2.0.x%20Config%20files
 
     ​​Electrical Hardware : Arduino Mega2560 + RAMPS 1.4  
