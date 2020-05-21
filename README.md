@@ -5,7 +5,7 @@
     
     click the image above to see the Video
 
-Breath settings change Operation video
+Breaths Rate settings change Operation video
 [![ClickHere to Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/ClickHere.png)](https://www.youtube.com/watch?v=n3r0zzroalQ)
 
 ![FW_Software Block Diagram](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/FW_Software_BlockDiagram.jpg)
