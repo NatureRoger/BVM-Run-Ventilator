@@ -41,6 +41,17 @@
     (台灣開源呼吸機研究團隊 共同筆記)
     https://paper.dropbox.com/doc/--A0Q_d~d4s7mIbPAndNXi7oz2Ag-XY6pra058VnWddddHXFz7
 
+# BVM-run Screen Shots
+![Screen Shot -1](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/Settings.png)
+
+![Screen Shot -2](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/Breath_Basic_Settings.png)
+
+![Screen Shot -3](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/Creat_Gcode.png)
+
+![Screen Shot -4](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/Creat_Gcode.png)
+
+![Screen Shot -5](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/LoadFile.png)
+
 # PRINTRUN 2.X
 
 The master branch holds the development of Printrun 2.x. This new version of Printrun supports Python 3 and wxPython 4. All new features and developments should be merged to it.
