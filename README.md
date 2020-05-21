@@ -20,17 +20,18 @@
     ​​Electrical Hardware : Arduino Mega2560 + RAMPS 1.4  
     https://wiki.keyestudio.com/Ks0091_keyestudio_3D_Printer_Kit_RAMPS_1.4_%2B_Mega_2560_%2B_5x_A4988_%2B_LCD_2004_Smart_Controller
 
-    42 Stepper motor 42BYGH60 馬達長60MM 1.6N 減速選用 1:13.7
+    42 Stepper motor 42BYGH60 馬達長60MM 1.6N 減速機(Reducer)選用 1:13.7
     https://goods.ruten.com.tw/item/show?21822084515222=
 
-    42 Stepper motor  42BYGH60  1:13.7 ( (USE MKS TB6600 instead of 4988 and with 24V3A Power Center)
+    42 Stepper motor  42BYGH60  Reducer 1:13.7  
+       (USE MKS TB6600 instead of 4988 and with 24V 3A Power Center)
     https://imall.com/product/42-Stepper-motor-12v-17HS6401-1.7A-42BYGH60-Printer-Carving-Machine/Home-Improvement-Electrical-Equipments-Supplies-Motors-Parts/aliexpress.com/32920203573/144-16201795/en
 
     Ks0154 keyestudio Mega Pololu Shield (RAMPS 1.4 )
     ​​PINOUT Instruction
     ​​https://wiki.keyestudio.com/Ks0154_keyestudio_Mega_Pololu_Shield_(RAMPS_1.4_)
 
-    MKS TB6600
+    MKS TB6600 Stepper motor Driver
     https://reprap.org/wiki/MKS_TB6600
 
     24 Volt 3 Amp Power Adapter takes an AC INPUT of 100-240V and gives 24V 3A DC output
