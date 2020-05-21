@@ -23,10 +23,10 @@ Breaths Rate settings change Operation video
     ​​Electrical Hardware : Arduino Mega2560 + RAMPS 1.4  
     https://wiki.keyestudio.com/Ks0091_keyestudio_3D_Printer_Kit_RAMPS_1.4_%2B_Mega_2560_%2B_5x_A4988_%2B_LCD_2004_Smart_Controller
 
-    42 Stepper motor 42BYGH60 馬達長60MM 1.6N 減速機(Reducer)選用 1:13.7
+    nema17 42 Stepper motor 42BYGH60 馬達長60MM 1.6N 減速機(Reducer)選用 1:13.7
     https://goods.ruten.com.tw/item/show?21822084515222=
 
-    42 Stepper motor  42BYGH60  Reducer 1:13.7  
+    nema17 42 Stepper motor  42BYGH60  Reducer 1:13.7  
        (USE MKS TB6600 instead of 4988 and with 24V 3A Power Center)
     https://imall.com/product/42-Stepper-motor-12v-17HS6401-1.7A-42BYGH60-Printer-Carving-Machine/Home-Improvement-Electrical-Equipments-Supplies-Motors-Parts/aliexpress.com/32920203573/144-16201795/en
 
@@ -39,6 +39,10 @@ Breaths Rate settings change Operation video
 
     24 Volt 3 Amp Power Adapter takes an AC INPUT of 100-240V and gives 24V 3A DC output
     https://www.electronicscomp.com/24v-3a-dc-power-adapter-india
+
+    BVM need to calibrate the Stroke in order to mapping the air Volumn
+    Now we use only one type : "GaleMed” Airway Rescu-5™ Manual Resuscitator
+    https://pdf.medicalexpo.com/pdf/galemed-corporation/airway-management/68550-167159.html
 
     OSMS-Taiwan Ventilator Team Notes 
     (台灣開源呼吸機研究團隊 共同筆記)
