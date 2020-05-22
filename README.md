@@ -14,6 +14,10 @@ Breaths Rate settings change Operation video
     (擠壓甦醒球機構件BOM List and 3D Print files 開源)
     https://sites.google.com/view/tgh-e-vent/?fbclid=IwAR2e0ypNQm938C6Apma3cTpSWR-FYaKgd5Ra4D2wA0aeUNozWgsnx262OU0
 
+    Rigid-Flange-Coupling-Coupler-Connector
+    Nema17 42 stepper motor Reducer 8mmAxis need this to enforce strength in order to durable Motor high Torque
+    https://www.amazon.com/Rigid-Flange-Coupling-Coupler-Connector/dp/B06Y6MSYCS
+
     BVM-run FirmWare is base on Marlin 3D Printer Firmware 2.0.x
     https://github.com/MarlinFirmware/Marlin
 
