@@ -15,7 +15,7 @@ Breaths Rate settings change Operation video
     https://sites.google.com/view/tgh-e-vent/?fbclid=IwAR2e0ypNQm938C6Apma3cTpSWR-FYaKgd5Ra4D2wA0aeUNozWgsnx262OU0
 
     Rigid-Flange-Coupling-Coupler-Connector
-    Nema17 42 stepper motor Reducer 8mmAxis need this to enforce strength in order to durable Motor high Torque
+    Nema17 42 stepper motor Reducer 8mmAxis need this to enforce strength in order to durable Motor high Torque instead of just use 3d printer make gear
     https://www.amazon.com/Rigid-Flange-Coupling-Coupler-Connector/dp/B06Y6MSYCS
 
     BVM-run FirmWare is base on Marlin 3D Printer Firmware 2.0.x
