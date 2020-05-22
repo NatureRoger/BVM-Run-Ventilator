@@ -117,7 +117,8 @@ class MacroEditor(wx.Dialog):
         return reindented
 
 SETTINGS_GROUPS = {"External": _("Breaths basic settings(呼吸循環基本設定)"),
-                   "External1": _("Breaths Advance settings(呼吸循環進階設定)"),
+                   "External1": _("Breaths Advance settings(吸氣進階設定)"),
+                   "External2": _("Breaths Advance settings(呼氣進階設定)"),
                    "Printer": _("BVM_Run<Ventilator> settings"),
                    "UI": _("User interface"),
                    "Viewer": _("Viewer"),
@@ -136,7 +137,7 @@ class PronterOptionsDialog(wx.Dialog):
         all_settings = pronterface.settings._all_settings()
         group_list = []
         groups = {}
-        for group in ["External", "External1", "Printer", "UI", "Viewer", "Colors"]:
+        for group in ["External", "External1", "External2", "Printer", "UI", "Viewer", "Colors"]:
             group_list.append(group)
             groups[group] = []
         for setting in all_settings:
