@@ -73,57 +73,10 @@ Printrun consists of printcore, pronsole and pronterface, and a small collection
 
 # GETTING BVM-run
 
-This section suggests using precompiled binaries, this way you get everything bundled into one single package for an easy installation.
-
-If you want the newest, shiniest features, you can run Printrun from source using the instructions further down this README.
-
-## Windows
-
-A precompiled version is available at https://github.com/NatureRoger/BVM-Run-Ventilator/
-
-## Mac OS X
-
-A precompiled version is available at https://github.com/NatureRoger/BVM-Run-Ventilator
-
-Note for OSX users: if OSX tells you the file is corrupted, you don't need to redownload it. Instead, you need to allow OSX to run unsigned apps. To do this, run 
-`sudo spctl --master-disable`
-
-
 ## Linux
 ### Ubuntu/Debian
 
-There is currently no package for Printrun 2. It must be [run from source](https://github.com/NatureRoger/BVM-Run-Ventilator/).
-
-### Chrome OS 
-
-You can use Printrun via crouton ( https://github.com/dnschneid/crouton ). Assuming you want Ubuntu Trusty, you used probably `sudo sh -e ~/Downloads/crouton -r trusty -t xfce` to install Ubuntu. Fetch and install printrun with the line given above for Ubuntu/Debian.
-
-By default you have no access to the serial port under Chrome OS crouton, so you cannot connect to your 3D printer. Add yourself to the serial group within the linux environment to fix this
-
-`sudo usermod -G serial -a <username>` 
-
-where `<username>` should be your username. Log out and in to make this group change active and allow communication with your printer. 
-
-### Fedora
-
-You can install Printrun from official packages. Install the whole package using
-
-`sudo dnf install printrun`
-
-Or get only apps you need by
-
-`sudo dnf install pronsole` or `pronterface` or `plater`
-
-Adding `--enablerepo updates-testing` option to `dnf` might sometimes give you newer packages (but also not very tested).
-
-
-### Archlinux
-
-Packages are available in AUR. Just run
-
-`yaourt printrun`
-
-and enjoy the `pronterface`, `pronsole`, ... commands directly.
+There is currently no package for BVM-run . It must be [run from source](https://github.com/NatureRoger/BVM-Run-Ventilator/).
 
 ## RUNNING FROM SOURCE
 
