@@ -3,7 +3,11 @@
     
 [![Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/youtube_image001.jpg)](https://www.youtube.com/watch?v=xGEwENa0d8M)
     
-    click the image above to see the Video
+    click the image above 
+    to see the Video
+
+BVM Run Ventilator Machinery assembly and disassembly (機構組裝及拆解<<<教學版>>>)
+[![ClickHere to Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/ClickHere.png)](https://www.youtube.com/watch?v=FfACLm2JhD0)
 
 Interduce How to use BVM Run Ventilator Software Control BVM Video
 [![ClickHere to Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/ClickHere.png)](https://youtu.be/5QASeaHh2UU)
