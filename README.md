@@ -9,6 +9,13 @@
 BVM Run Ventilator Machinery assembly and disassembly (機構組裝及拆解<<<教學版>>>)
 [![ClickHere to Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/ClickHere.png)](https://www.youtube.com/watch?v=FfACLm2JhD0)
 
+Machinery disassembled photos link (機構拆解後照片)
+https://www.facebook.com/NatureRogerOng/posts/10213542758963366
+https://www.facebook.com/NatureRogerOng/posts/10213542750363151
+
+Machinery prepare to disassemble photo links 
+https://www.facebook.com/NatureRogerOng/posts/10213543402739460
+
 Interduce How to use BVM Run Ventilator Software Control BVM Video
 [![ClickHere to Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/ClickHere.png)](https://youtu.be/5QASeaHh2UU)
 
