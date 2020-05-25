@@ -20,7 +20,7 @@ https://www.facebook.com/NatureRogerOng/posts/10213543402739460
 Interduce How to use BVM Run Ventilator Software Control BVM Video
 [![ClickHere to Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/ClickHere.png)](https://youtu.be/5QASeaHh2UU)
 
-BVM Run Ventilator Push Deep testing when sealing the air way out with tap.
+BVM Run Ventilator Push Deep testing when sealing the air way out with tape.
 [![ClickHere to Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/ClickHere.png)](https://www.youtube.com/watch?v=RtF9QfgFVEE)
 
 ![FW_Software Block Diagram](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/FW_Software_BlockDiagram.jpg)
