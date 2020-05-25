@@ -27,46 +27,46 @@ BVM Run Ventilator Push Deep testing when sealing the air way out with tap.
 
     BVM-run machinery GH E-Vent Open Source Link 
     (擠壓甦醒球機構件BOM List and 3D Print files 開源)
-![BOM List and 3D Print files link](https://sites.google.com/view/tgh-e-vent/?fbclid=IwAR2e0ypNQm938C6Apma3cTpSWR-FYaKgd5Ra4D2wA0aeUNozWgsnx262OU0)
+https://sites.google.com/view/tgh-e-vent/?fbclid=IwAR2e0ypNQm938C6Apma3cTpSWR-FYaKgd5Ra4D2wA0aeUNozWgsnx262OU0)
     
 
     Rigid-Flange-Coupling-Coupler-Connector
     Nema17 42 stepper motor Reducer 8mmAxis need this to enforce strength in order to durable Motor high Torque instead of just use 3d printer make gear
-    https://www.amazon.com/Rigid-Flange-Coupling-Coupler-Connector/dp/B06Y6MSYCS
+https://www.amazon.com/Rigid-Flange-Coupling-Coupler-Connector/dp/B06Y6MSYCS
 
     BVM-run FirmWare is base on Marlin 3D Printer Firmware 2.0.x
-    https://github.com/MarlinFirmware/Marlin
+https://github.com/MarlinFirmware/Marlin
 
     The configuration files of BVM-run FirmWare for your reference
-    https://github.com/NatureRoger/BVM-Run-Ventilator/tree/master/FirmWare/Marlin-2.0.x%20Config%20files
+https://github.com/NatureRoger/BVM-Run-Ventilator/tree/master/FirmWare/Marlin-2.0.x%20Config%20files
 
     ​​Electrical Hardware : Arduino Mega2560 + RAMPS 1.4  
-    https://wiki.keyestudio.com/Ks0091_keyestudio_3D_Printer_Kit_RAMPS_1.4_%2B_Mega_2560_%2B_5x_A4988_%2B_LCD_2004_Smart_Controller
+https://wiki.keyestudio.com/Ks0091_keyestudio_3D_Printer_Kit_RAMPS_1.4_%2B_Mega_2560_%2B_5x_A4988_%2B_LCD_2004_Smart_Controller
 
     nema17 42 Stepper motor 42BYGH60 馬達長60MM 1.6N 減速機(Reducer)選用 1:14(13.7)
-    https://goods.ruten.com.tw/item/show?21822084515222=
+https://goods.ruten.com.tw/item/show?21822084515222=
 
     nema17 42 Stepper motor  42BYGH60  ***MUST with Reducer 1:14(13.7) 
        (USE MKS TB6600 instead of 4988 and with 24V 3A Power Center)
-    https://imall.com/product/42-Stepper-motor-12v-17HS6401-1.7A-42BYGH60-Printer-Carving-Machine/Home-Improvement-Electrical-Equipments-Supplies-Motors-Parts/aliexpress.com/32920203573/144-16201795/en
+https://imall.com/product/42-Stepper-motor-12v-17HS6401-1.7A-42BYGH60-Printer-Carving-Machine/Home-Improvement-Electrical-Equipments-Supplies-Motors-Parts/aliexpress.com/32920203573/144-16201795/en
 
     Ks0154 keyestudio Mega Pololu Shield (RAMPS 1.4 )
     ​​PINOUT Instruction
-    ​​https://wiki.keyestudio.com/Ks0154_keyestudio_Mega_Pololu_Shield_(RAMPS_1.4_)
+https://wiki.keyestudio.com/Ks0154_keyestudio_Mega_Pololu_Shield_(RAMPS_1.4_)
 
     MKS TB6600 Stepper motor Driver
-    https://reprap.org/wiki/MKS_TB6600
+https://reprap.org/wiki/MKS_TB6600
 
     24 Volt 3 Amp Power Adapter takes an AC INPUT of 100-240V and gives 24V 3A DC output
-    https://www.electronicscomp.com/24v-3a-dc-power-adapter-india
+https://www.electronicscomp.com/24v-3a-dc-power-adapter-india
 
     BVM need to calibrate the Stroke in order to mapping the air Volumn
     Now we use only one type : "GaleMed” Airway Rescu-5™ Manual Resuscitator
-    https://pdf.medicalexpo.com/pdf/galemed-corporation/airway-management/68550-167159.html
+https://pdf.medicalexpo.com/pdf/galemed-corporation/airway-management/68550-167159.html
 
     OSMS-Taiwan Ventilator Team Notes 
     (台灣開源呼吸機研究團隊 共同筆記)
-    https://paper.dropbox.com/doc/--A0Q_d~d4s7mIbPAndNXi7oz2Ag-XY6pra058VnWddddHXFz7
+https://paper.dropbox.com/doc/--A0Q_d~d4s7mIbPAndNXi7oz2Ag-XY6pra058VnWddddHXFz7
 
 # BVM-run Screen Shots
 ![Screen Shot -1](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/Settings.png)
