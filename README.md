@@ -11,6 +11,7 @@ BVM Run Ventilator Machinery assembly and disassembly (機構組裝及拆解<<<�
 
 Machinery disassembled photos link (機構拆解後照片)
 https://www.facebook.com/NatureRogerOng/posts/10213542758963366
+Rigid-Flange-Coupling-Coupler-Connector with gear
 https://www.facebook.com/NatureRogerOng/posts/10213542750363151
 
 Machinery prepare to disassemble photo links 
@@ -26,7 +27,8 @@ BVM Run Ventilator Push Deep testing when sealing the air way out with tap.
 
     BVM-run machinery GH E-Vent Open Source Link 
     (擠壓甦醒球機構件BOM List and 3D Print files 開源)
-    https://sites.google.com/view/tgh-e-vent/?fbclid=IwAR2e0ypNQm938C6Apma3cTpSWR-FYaKgd5Ra4D2wA0aeUNozWgsnx262OU0
+![BOM List and 3D Print files link](https://sites.google.com/view/tgh-e-vent/?fbclid=IwAR2e0ypNQm938C6Apma3cTpSWR-FYaKgd5Ra4D2wA0aeUNozWgsnx262OU0)
+    
 
     Rigid-Flange-Coupling-Coupler-Connector
     Nema17 42 stepper motor Reducer 8mmAxis need this to enforce strength in order to durable Motor high Torque instead of just use 3d printer make gear
