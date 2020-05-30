@@ -42,7 +42,8 @@ class ToggleablePane(wx.BoxSizer):
         self.parentpanel = parentpanel
         self.parentsizers = parentsizers
         self.panepanel = root.newPanel(parentpanel)
-        self.button = wx.Button(parentpanel, -1, label, size = (35, 18), style = wx.BU_EXACTFIT)
+        #self.button = wx.Button(parentpanel, -1, label, size = (35, 18), style = wx.BU_EXACTFIT)
+        self.button = wx.Button(parentpanel, -1, label, size = (40, 24), style = wx.BU_EXACTFIT)
         self.button.Bind(wx.EVT_BUTTON, self.toggle)
 
     def toggle(self, event):
@@ -299,6 +300,7 @@ class MainWindow(wx.Frame):
 
     def gui_set_disconnected(self):
         self.printbtn.Disable()
+        self.printONEbtn.Disable()  ## Added by Roger 2020-05-30
         self.pausebtn.Disable()
         #self.recoverbtn.Disable()  #Roger Mark it out
         for control in self.printerControls:

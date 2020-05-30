@@ -1642,6 +1642,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
             self.p.printing = 0
             wx.CallAfter(self.pausebtn.SetLabel, _("Pause"))
             wx.CallAfter(self.printbtn.SetLabel, _("Execute"))
+            wx.CallAfter(self.printONEbtn.SetLabel, _("Exe1"))
             wx.CallAfter(self.toolbarsizer.Layout)
             self.paused = 0
             if self.sdprinting:
@@ -1751,6 +1752,69 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         global PauseHasBeenPressed   ### Added by Roger at 2020-04-23
         PauseHasBeenPressed = False
         threading.Thread(target = self.LoopingPrint).start()   ### Added by Roger at 2020-04-23
+
+    ## In gui/toolbar.py , Added By Roger 2020-05-30
+    """
+    if not hasattr(root, "printONEbtn"):
+        root.printbtn = make_autosize_button(parentpanel, _("Exe1"), root.printfile_one_cycle, _("Start Executing Loaded File, one time"))
+        root.statefulControls.append(root.printONEbtn)
+    else:
+        root.printONEbtn.Reparent(parentpanel)
+    self.Add(root.printONEbtn)
+    """
+    ##
+
+    ## Added By Roger 2020-05-30
+    def printfile_one_cycle(self, event):
+        #self.extra_print_time = 0
+        #if self.paused:
+        #    self.p.paused = 0
+        #    self.paused = 0
+        #    if self.sdprinting:
+        #        print ('sdprinting')
+        #        self.on_startprint()
+        #        self.p.send_now("M26 S0")
+        #        self.p.send_now("M24")
+        #        return
+
+        if not self.fgcode:
+            wx.CallAfter(self.statusbar.SetStatusText, _("No file loaded. Please use load first."))
+            return
+        if not self.p.online:
+            wx.CallAfter(self.statusbar.SetStatusText, _("Not connected to Ventilator."))
+            return
+        self.sdprinting = False
+        self.on_startprint()   
+
+        #Wait for button press
+        print ('Wait for Pause/Off button press')
+        self.p.paused = 0
+        wx.CallAfter(self.pausebtn.SetLabel, _("Pause"))
+        wx.CallAfter(self.toolbarsizer.Layout)
+        self.paused = 0
+        global PauseHasBeenPressed   ### Added by Roger at 2020-04-23
+        PauseHasBeenPressed = False
+
+        if self.p.online:
+            self.p.send_now("G28 X")
+            self.log(_("Auto-home: G28 X"))
+        else:
+            self.logError(_("Ventilator is not online. <<<Taiwan can Help>>>"))
+  
+        wx.CallAfter(self.pausebtn.SetLabel, _("Pause"))
+        wx.CallAfter(self.pausebtn.Enable)
+        wx.CallAfter(self.printbtn.SetLabel, _("Restart"))
+        wx.CallAfter(self.printbtn.Disable)
+        wx.CallAfter(self.toolbarsizer.Layout)
+        #Stay in loop until button is pressed
+        print ('startprint %s', self.fgcode)
+        self.p.startprint(self.fgcode)
+        time.sleep(1.2)               
+
+        #Pause button has been pressed!
+        #print("Pause Button Pressed!") 
+        wx.CallAfter(self.pausebtn.SetLabel, _("Resume"))
+        wx.CallAfter(self.toolbarsizer.Layout)
 
     def sdprintfile(self, event):
         self.extra_print_time = 0
@@ -2105,7 +2169,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
             #Stay in loop until button is pressed
             print ('startprint %s', self.fgcode)
             self.p.startprint(self.fgcode)
-            time.sleep(1.2)               
+            time.sleep(1.2)  
             continue
         #Pause button has been pressed!
         #print("Pause Button Pressed!") 
@@ -2318,6 +2382,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         #self.recoverbtn.Disable()
         if failed==False and self.p.online:
             self.printbtn.Enable()
+            self.printONEbtn.Enable()  ## Added By Roger 2020-05-30
         self.toolbarsizer.Layout()
         self.viz_last_layer = None
         if print_stats:

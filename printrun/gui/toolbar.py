@@ -72,11 +72,21 @@ def MainToolbar(root, parentpanel = None, use_wrapsizer = False):
     root.sdbtn.Reparent(parentpanel)
     root.printerControls.append(root.sdbtn)
     if not hasattr(root, "printbtn"):
-        root.printbtn = make_autosize_button(parentpanel, _("Execute"), root.printfile, _("Start Executing Loaded File"))
+        root.printbtn = make_autosize_button(parentpanel, _("Execute"), root.printfile, _("Start Executing Loaded File , Looping"))
         root.statefulControls.append(root.printbtn)
     else:
         root.printbtn.Reparent(parentpanel)
     self.Add(root.printbtn)
+
+    ## Added By Roger 2020-05-30
+    if not hasattr(root, "printONEbtn"):
+        root.printONEbtn = make_autosize_button(parentpanel, _("Exe1"), root.printfile_one_cycle, _("Start Executing Loaded File, one time"))
+        root.statefulControls.append(root.printONEbtn)
+    else:
+        root.printONEbtn.Reparent(parentpanel)
+    self.Add(root.printONEbtn)
+    ##
+
     if not hasattr(root, "pausebtn"):
         root.pausebtn = make_autosize_button(parentpanel, _("Pause"), root.pause, _("Pause Current Executing"))
         root.statefulControls.append(root.pausebtn)
@@ -89,6 +99,7 @@ def MainToolbar(root, parentpanel = None, use_wrapsizer = False):
     ### Added by Roger  2020-04-27
     root.Creat_Gcode_btn = make_autosize_button(parentpanel, _("Creat_Gcode"), root.Creat_Gcode, _("Creat_Gcode by settings of BVM-Run-Ventilator"), self)
     root.printerControls.append(root.Creat_Gcode_btn)
+
 
     self.AddStretchSpacer(prop = 4)
 
