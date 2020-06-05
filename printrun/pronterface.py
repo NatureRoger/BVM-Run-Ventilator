@@ -1178,8 +1178,8 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.settings._add(FloatSpinSetting("InHale4_descend_Xratio", 0.02, 0.01, 0.2, _("In-Hale4 descend Stroke ratio 減速擠壓行程配比"), _("In-Hale4 descend Stroke ratio 減速擠壓行程配比"), "External1"))          
         self.settings._add(FloatSpinSetting("InHale4_descend_Tratio",  0.06, 0.01, 0.2, _("In-Hale4 descend time ratio 減速擠壓time配比"), _("In-Hale4 descend Stoke time ratio 減速擠壓time配比"), "External1")) 
  
-        self.settings._add(FloatSpinSetting("InHale5_toStop_Xratio", 0.03, 0.01, 0.2, _("In-Hale5 toStop Stroke ratio 擠壓停止行程配比"), _("In-Hale5 toStop Stroke ratio 擠壓停止行程配比"), "External1")) 
-        self.settings._add(FloatSpinSetting("InHale5_toStop_Tratio",  0.02, 0.01, 0.2, _("In-Hale5 toStop time ratio 擠壓停止time配比"), _("In-Hale5 toStop time ratio 擠壓停止time配比"), "External1"))
+        self.settings._add(FloatSpinSetting("InHale5_toStop_Xratio", 0.07, 0.01, 0.2, _("In-Hale5 toStop Stroke ratio 擠壓停止行程配比"), _("In-Hale5 toStop Stroke ratio 擠壓停止行程配比"), "External1")) 
+        self.settings._add(FloatSpinSetting("InHale5_toStop_Tratio",  0.20, 0.01, 0.2, _("In-Hale5 toStop time ratio 擠壓停止time配比"), _("In-Hale5 toStop time ratio 擠壓停止time配比"), "External1"))
 
         ##
 
