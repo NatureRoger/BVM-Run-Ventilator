@@ -7,6 +7,11 @@
     click the image above 
     to see the Video
 
+[![Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/youtube_image002.jpg)](https://youtu.be/nIIvLDyeI8g )
+    
+    click the image above 
+    to see the Ventilator with artificial lung testing Video    
+
 BVM Run Ventilator Machinery assembly and disassembly (機構組裝及拆解<<<教學版>>>)
 [![ClickHere to Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/ClickHere.png)](https://www.youtube.com/watch?v=FfACLm2JhD0)
 
@@ -31,10 +36,6 @@ BVM Run Ventilator Push Deep testing when sealing the air way out with tape.
 https://sites.google.com/view/tgh-e-vent/?fbclid=IwAR2e0ypNQm938C6Apma3cTpSWR-FYaKgd5Ra4D2wA0aeUNozWgsnx262OU0)
     
 
-    Rigid-Flange-Coupling-Coupler-Connector
-    Nema17 42 stepper motor Reducer 8mmAxis need this to enforce strength in order to durable Motor high Torque instead of just use 3d printer make gear
-https://www.amazon.com/Rigid-Flange-Coupling-Coupler-Connector/dp/B06Y6MSYCS
-
     BVM-run FirmWare is base on Marlin 3D Printer Firmware 2.0.x
 https://github.com/MarlinFirmware/Marlin
 
@@ -44,12 +45,24 @@ https://github.com/NatureRoger/BVM-Run-Ventilator/tree/master/FirmWare/Marlin-2.
     ​​Electrical Hardware : Arduino Mega2560 + RAMPS 1.4  
 https://wiki.keyestudio.com/Ks0091_keyestudio_3D_Printer_Kit_RAMPS_1.4_%2B_Mega_2560_%2B_5x_A4988_%2B_LCD_2004_Smart_Controller
 
-    nema17 42 Stepper motor 42BYGH60 馬達長60MM 1.6N 減速機(Reducer)選用 1:14(13.7)
+nema23 57 stepper motor 57HB76-401A 76mm torque 2.3Nm 4.0A (Must with 1:10 Reducer axis 14mm) 
+Next Generation use nema23 with 1;10 Reducer instead of nema17 42 
+https://www.aliexpress.com/item/32826009416.html
+
+14mm-universal-aluminum-mounting- shaft key coupling 18011 (for nema23 57 stepper motor)
+https://www.aliexpress.com/i/32795576044.html
+
+nema17 42 Stepper motor 42BYGH60 馬達長60MM 1.6N 減速機(Reducer)選用 1:14(13.7)
 https://goods.ruten.com.tw/item/show?21822084515222=
 
     nema17 42 Stepper motor  42BYGH60  ***MUST with Reducer 1:14(13.7) 
        (USE MKS TB6600 instead of 4988 and with 24V 3A Power Center)
 https://imall.com/product/42-Stepper-motor-12v-17HS6401-1.7A-42BYGH60-Printer-Carving-Machine/Home-Improvement-Electrical-Equipments-Supplies-Motors-Parts/aliexpress.com/32920203573/144-16201795/en
+
+    Rigid-Flange-Coupling-Coupler-Connector (for nema17 42 stepper motor)
+    Nema17 42 stepper motor Reducer 8mmAxis need this to enforce strength in order to durable Motor high Torque instead of just use 3d printer make gear
+https://www.amazon.com/Rigid-Flange-Coupling-Coupler-Connector/dp/B06Y6MSYCS
+
 
     Ks0154 keyestudio Mega Pololu Shield (RAMPS 1.4 )
     ​​PINOUT Instruction

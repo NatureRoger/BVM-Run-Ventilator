@@ -1166,7 +1166,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.settings._add(SpinSetting("InHale_VmL",600, 100,900, _("In-Hale Volumn 空氣容積 (吸氣量)"), _("In-Hale Volumn (吸氣量) 請考量死腔氣量"), "External"))
         self.settings._add(FloatSpinSetting("InHale_ratio", 1, 1, 2, _("(In-Hale吸) time Ratio"), _("In-Hale(吸) VS Ex-Hale(呼) 時間比 ex: 2(0.4s) : 3(0.6s)"), "External"))
         self.settings._add(FloatSpinSetting("ExHale_ratio", 1.5, 1, 3, _("(Ex-Hale呼) time Ratio"), _("In-Hale(吸) VS Ex-Hale(呼) 時間比 ex: 2(0.4s) : 3(0.6s)"), "External"))
-        self.settings._add(ComboSetting("Motor_Type", "NEMA17 42 Stepper", ["NEMA17 42 Stepper", "NEMA23 57 Stepper"], _("Choice the supported Motor Type model"), _("Choice the supported Motor Type model"), "External"))
+        self.settings._add(ComboSetting("Motor_Type", "NEMA17 42 Stepper with 1:13.7 reducer", ["NEMA17 42 Stepper with 1:13.7 reducer", "NEMA23 57 Stepper with 1:10 reducer"], _("Choice the supported Motor Type model"), _("Choice the supported Motor Type model"), "External"))
         self.settings._add(SpinSetting("BVM_RUN_Max_StokeX", 85, 50, 300, _("BVM_RUN 900mL Stoke X (Max Stoke)"), _("BVM_RUN 900mL Stoke X (Max Stoke)"), "External"))
     
         #0.05 , 0.05, 0.7, 0.05, 0.05
