@@ -1,6 +1,7 @@
-# BVM-run 0.1 Alpha
+# BVM-run 0.2
     This version of BVM-run needs Python 3 and wxPython 4 and pysqlite3.
-    
+    Add to support NEMA23 57 Stepper motor, you can chioce "NEMA17 42 Stepper" or "NEMA23 57 Stepper" from Menu-> Settings -> BVM Run Options
+  BVM-run 0.1 first release
 [![Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/youtube_image001.jpg)](https://www.youtube.com/watch?v=xGEwENa0d8M)
     
     click the image above 
