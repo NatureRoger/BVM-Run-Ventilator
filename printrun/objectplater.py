@@ -340,8 +340,7 @@ class plotPanel(wx.Panel):
         self.Radius         = 0.012    ## "Radius" : inner diameter of the 3d print pipe 
                              ##            12mm ->  0.012m / 2 = 0.006m   
         self.radius_tube    = 0.002    ## "radius_tube" : diameter of the Pitot Tube
-                                  ##       4mm ->  0.004m / 2 = 0.002m  
-
+                                  ##       4mm ->  0.004m / 2 = 0.002m 
         if 'raspi' in os.uname():  ## raspberry pi slow down the refresh interval
             v_interval=300
         else:
