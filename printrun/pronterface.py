@@ -440,7 +440,9 @@ class PronterWindow(MainWindow, pronsole.pronsole):
         # -- Okai, it seems it breaks things like update_gviz_params ><
         os.putenv("UBUNTU_MENUPROXY", "0")  
         size = (self.settings.last_window_width, self.settings.last_window_height)
-        MainWindow.__init__(self, None, title = _("Pronterface-'OSCMS TAIWAN'-BVM_Run<Ventilator>"), size = size)
+        platform_str=platform.platform()
+        Title_str= "Pronterface-'OSCMS TAIWAN'-BVM_Run<Ventilator> - %s" % (platform_str)
+        MainWindow.__init__(self, None, title = _(Title_str), size = size)
         if self.settings.last_window_maximized:
             self.Maximize()
         self.SetIcon(wx.Icon(iconfile("pronterface.png"), wx.BITMAP_TYPE_PNG))

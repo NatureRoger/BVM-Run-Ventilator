@@ -476,9 +476,11 @@ class Plater(wx.Frame):
         size = kwargs.get("size", (800, 580))
         if "size" in kwargs:
             del kwargs["size"]
+        platform_str=platform.platform()
+        Title_str= "Matplot Chat - %s" % (platform_str)
         #style = wx.DEFAULT_FRAME_STYLE & (~wx.CLOSE_BOX) | wx.STAY_ON_TOP
         style = wx.DEFAULT_FRAME_STYLE & (~wx.CLOSE_BOX) | wx.FRAME_FLOAT_ON_PARENT
-        wx.Frame.__init__(self, parent, title = _("Matplot Chat"), size = size, style=style)
+        wx.Frame.__init__(self, parent, title = _(Title_str), size = size, style=style)
         self.SetIcon(wx.Icon(iconfile("plater.png"), wx.BITMAP_TYPE_PNG))
         #self.prepare_ui(**kwargs)
         panel = wx.Panel(self)
