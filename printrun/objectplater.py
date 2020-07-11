@@ -342,7 +342,12 @@ class plotPanel(wx.Panel):
         self.radius_tube    = 0.002    ## "radius_tube" : diameter of the Pitot Tube
                                   ##       4mm ->  0.004m / 2 = 0.002m  
 
-        self.animator = manim.FuncAnimation(self.fig,self.anim, interval=100)
+        if 'raspi' in os.uname():  ## raspberry pi slow down the refresh interval
+            v_interval=300
+        else:
+            v_interval=100
+
+        self.animator = manim.FuncAnimation(self.fig,self.anim, interval=v_interval)
 
         # Now put all into a sizer
         sizer = wx.BoxSizer(wx.VERTICAL)
