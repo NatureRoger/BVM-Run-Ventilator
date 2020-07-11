@@ -18,6 +18,7 @@ install_locale('plater')
 
 import logging
 import os
+import platform
 import types
 import wx
 
@@ -341,7 +342,9 @@ class plotPanel(wx.Panel):
                              ##            12mm ->  0.012m / 2 = 0.006m   
         self.radius_tube    = 0.002    ## "radius_tube" : diameter of the Pitot Tube
                                   ##       4mm ->  0.004m / 2 = 0.002m 
-        if 'raspi' in os.uname():  ## raspberry pi slow down the refresh interval
+
+        platform_str=platform.platform()
+        if 'raspi' in platform_str:  ## raspberry pi slow down the refresh interval
             v_interval=300
         else:
             v_interval=100
