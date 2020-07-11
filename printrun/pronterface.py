@@ -27,6 +27,7 @@ import glob
 import logging
 import re
 
+#import shlex                     # Added by Roger 2020-07-06
 from pathlib import Path         # Added by Roger 2020-05-14
 import datetime                  # Added by Roger 2020-05-14
 from datetime import timedelta   # Added by Roger 2020-05-14
@@ -56,6 +57,7 @@ except:
     raise
 
 from .gui.widgets import SpecialButton, MacroEditor, PronterOptions, ButtonEdit
+##from .gui.widgets import SpecialButton, MacroEditor, PronterOptions, PronterMatplot, ButtonEdit #add PronterMatplot by Roger 2020-06-30
 
 
 winsize = (800, 500)
@@ -77,19 +79,19 @@ db = sqlite3.connect(db_path)
 
 debug_mod=0
 
-## Get Stoke (X value) from Calibrated  Strok_Volumn mapping table
-def DB_Volumn_Get_Stoke(db, BVM_id, V_mL, debug_mod=0):
+## Get Stroke (X value) from Calibrated  Strok_Volumn mapping table
+def DB_Volumn_Get_Stroke(db, BVM_id, V_mL, debug_mod=0):
 
     Lower_id= 0
     Lower_VmL= 0
-    Lower_Stoke= 0
+    Lower_Stroke= 0
 
     upper_id= 0
-    upper_Stoke= 0          
+    upper_Stroke= 0          
     upper_VmL= 0
 
     cursor = db.cursor()
-    ## Search Stoke by the Volumn value
+    ## Search Stroke by the Volumn value
     if(V_mL> 900) :
         print ('<<<Error>>> V_mL Must under 900mL , force it to 900mL!')
         V_mL = 900
@@ -113,7 +115,7 @@ def DB_Volumn_Get_Stoke(db, BVM_id, V_mL, debug_mod=0):
     for row in cursor:
         if (debug_mod>0) : print ('Got upper')
         upper_id= row[0]
-        upper_Stoke= row[1]         
+        upper_Stroke= row[1]         
         upper_VmL= row[2]
 
     ### Get Lower Strok
@@ -124,37 +126,37 @@ def DB_Volumn_Get_Stoke(db, BVM_id, V_mL, debug_mod=0):
     for row in cursor:
         if (debug_mod>0) : print ('Got Lower')
         Lower_id= row[0]            
-        Lower_Stoke= row[1]         
+        Lower_Stroke= row[1]         
         Lower_VmL= row[2]
 
     if (upper_VmL ==0 and Lower_VmL ==0):
-        Stoke =0
+        Stroke =0
     else:
-        Stoke =  (V_mL - Lower_VmL ) / (upper_VmL - Lower_VmL) * (upper_Stoke - Lower_Stoke ) +  Lower_Stoke
+        Stroke =  (V_mL - Lower_VmL ) / (upper_VmL - Lower_VmL) * (upper_Stroke - Lower_Stroke ) +  Lower_Stroke
 
-    return Stoke    
+    return Stroke    
 
 ## Calculate the proper F value of a G-Code (G0 X100 F??) for a Move command line
-## total_x =  self.SpinSetting.BVM_RUN_Max_StokeX
+## total_x =  self.SpinSetting.BVM_RUN_Max_StrokeX
 ## Motor_Type = NEMA17 (42 Stepper), NEMA23 (57 Stepper)
-def DB_Get_speed_Fvalue(db, t_stoke, bpm, x1, x2, total_x, t, Motor_Type, debug_mod=0):
+def DB_Get_speed_Fvalue(db, t_stroke, bpm, x1, x2, total_x, t, Motor_Type, debug_mod=0):
 
     if (x1==x2):
         print ('<<<Error>>> x=0 move F Value is 0.')
         Fvalue=0
         return Fvalue
 
-    Stoke= abs(x1-x2) 
+    Stroke= abs(x1-x2) 
 
-    ##vSecond1000 = int( total_x / Stoke * t * 1000) 
+    ##vSecond1000 = int( total_x / Stroke * t * 1000) 
 
-    #X_Per_Second = t_stoke * 2 * bpm / 60
+    #X_Per_Second = t_stroke * 2 * bpm / 60
 
-    #vSecond1000 = t* 1000/t_stoke * total_x  #<880/10>   total_x /  Stoke
+    #vSecond1000 = t* 1000/t_stroke * total_x  #<880/10>   total_x /  Stroke
  
-    vSecond1000 = int(t * 1000/ Stoke * total_x) 
+    vSecond1000 = int(t * 1000/ Stroke * total_x) 
     
-    if (debug_mod>0) : print ("===> Delta X = %s , t= %s, vSecond1000 = %s " % (Stoke,t, vSecond1000) )
+    if (debug_mod>0) : print ("===> Delta X = %s , t= %s, vSecond1000 = %s " % (Stroke,t, vSecond1000) )
 
     cursor = db.cursor()
 
@@ -227,8 +229,8 @@ def DB_Get_speed_Fvalue(db, t_stoke, bpm, x1, x2, total_x, t, Motor_Type, debug_
     #   coefficient_adj1= (25-bpm)/11.8 * 0.0006 * 25 / (2*bpm)   
     #coefficient_adj = 1.145+ coefficient_adj1    #( + 0.00060<10>,  0.00073<11>,  0.00073<11>)
     ##<<<12>>> + (25-bpm)/11.8 * 0.0006 * 25 / (2*bpm)
-    if t_stoke > 63:
-        coefficient_adj = 1 - ( (t_stoke - 63) / (t_stoke * (t_stoke - 63)/6.2) * 0.45)
+    if t_stroke > 63:
+        coefficient_adj = 1 - ( (t_stroke - 63) / (t_stroke * (t_stroke - 63)/6.2) * 0.45)
 
     Fvalue = int (Fvalue * coefficient_adj)
 
@@ -239,10 +241,79 @@ def DB_Get_speed_Fvalue(db, t_stoke, bpm, x1, x2, total_x, t, Motor_Type, debug_
 
     if (debug_mod>0) : print ('    after adj Fvalue=%s, coefficient_adj=%s' % (Fvalue, coefficient_adj) )
     #print ('    after adj Fvalue=%s, coefficient_adj=%s' % (Fvalue, coefficient_adj) )
-    #print ('t=%f, Stoke=%f , Max Stoke=%f < vSecond1000=%d, Fvalue=%d, coefficient_adj=%f' % (t, Stoke, total_x, vSecond1000, Fvalue, coefficient_adj) )
+    #print ('t=%f, Stroke=%f , Max Stroke=%f < vSecond1000=%d, Fvalue=%d, coefficient_adj=%f' % (t, Stroke, total_x, vSecond1000, Fvalue, coefficient_adj) )
 
     return Fvalue
 
+
+class Command(object):
+    """
+    Enables to run subprocess commands in a different thread with TIMEOUT option.
+    Based on jcollado's solution:
+    http://stackoverflow.com/questions/1191374/subprocess-with-timeout/4825933#4825933
+    """
+    command = None
+    process = None
+    status = None
+    output, error = '', ''
+
+    def __init__(self, command):
+        try:
+          basestring
+        except NameError:
+          basestring = str
+        if isinstance(command, basestring):
+            command = shlex.split(command)
+        self.command = command
+
+    def run(self, timeout=None, **kwargs):
+        """ Run a command then return: (status, output, error). """
+        def target(**kwargs):
+            try:
+                self.process = subprocess.Popen(self.command, **kwargs)
+                self.output, self.error = self.process.communicate()
+                self.status = self.process.returncode
+            except:
+                self.error = traceback.format_exc()
+                self.status = -1
+        # default stdout and stderr
+        if 'stdout' not in kwargs:
+            kwargs['stdout'] = subprocess.PIPE
+        if 'stderr' not in kwargs:
+            kwargs['stderr'] = subprocess.PIPE
+        # thread
+        thread = threading.Thread(target=target, kwargs=kwargs)
+        thread.start()
+        thread.join(timeout)
+        if thread.is_alive():
+            self.process.terminate()
+            thread.join()
+        return self.status, self.output, self.error    
+
+"""
+#import subprocess, threading
+class Command(object):
+    def __init__(self, cmd):
+        self.cmd = cmd
+        self.process = None
+
+    def run(self, timeout):
+        def target():
+            print('Thread started')
+            self.process = subprocess.Popen(self.cmd, shell=True)
+            self.process.communicate()
+            print('Thread finished')
+
+        thread = threading.Thread(target=target)
+        thread.start()
+
+        thread.join(timeout)
+        if thread.is_alive():
+            print ('Terminating process')
+            self.process.terminate()
+            thread.join()
+        print(self.process.returncode) 
+"""
 ###-End-##################### Add by Roger  2020-04-26  
 
 
@@ -746,18 +817,27 @@ class PronterWindow(MainWindow, pronsole.pronsole):
                 self.commandbox.SetValue(self.commandbox.history[self.commandbox.histindex])
                 self.commandbox.SetSelection(0, len(self.commandbox.history[self.commandbox.histindex]))
         else:
-            e.Skip()
-
+            e.Skip()           
+    """
     def plate(self, e):
-        #from . import stlplater as plater
-        self.log(_("Plate function activated"))
-        #plater.StlPlater(size = (800, 580), callback = self.platecb,
-        #                 parent = self,
-        #                 build_dimensions = self.build_dimensions_list,
-        #                 circular_platform = self.settings.circular_bed,
-        #                 simarrange_path = self.settings.simarrange_path,
-        #                 antialias_samples = int(self.settings.antialias3dsamples)).Show()
+        run_script='python BMP180-SDP810-500PA-TEST.py None' 
+        command = Command(run_script)
+        command.run(timeout=60) 
 
+    """
+    def plate(self, e):
+        from . import stlplater as plater
+        self.log(_("Plate function activated"))
+        plater.StlPlater(size = (800, 580), callback = self.platecb,
+                         parent = self,
+                         build_dimensions = self.build_dimensions_list,
+                         circular_platform = self.settings.circular_bed,
+                         simarrange_path = self.settings.simarrange_path,
+                         antialias_samples = int(self.settings.antialias3dsamples),
+                         com_port = self.settings.FlowMeter_port,
+                         com_baudrate = self.settings.FlowMeter_baudrate
+                         ).Show()
+   
     def plate_gcode(self, e):
         from . import gcodeplater as plater
         self.log(_("G-Code plate function activated"))
@@ -972,7 +1052,8 @@ class PronterWindow(MainWindow, pronsole.pronsole):
         # Tools Menu
         m = wx.Menu()
         self.Bind(wx.EVT_MENU, self.do_editgcode, m.Append(-1, _("&Edit..."), _(" Edit open file")))
-        #self.Bind(wx.EVT_MENU, self.plate, m.Append(-1, _("Plater"), _(" Compose 3D models into a single plate")))  ## Roger Delete it
+        #self.Bind(wx.EVT_MENU, lambda *e: PronterMatplot(self), m.Append(-1, _("&BVM-Run Matplot壓力流量圖"), _("Pressure & Flow Matplot Chart")))  ## Roger Delete it     
+        self.Bind(wx.EVT_MENU, self.plate, m.Append(-1, _("&BVM-Run Matplot壓力流量圖"), _("Pressure & Flow Matplot Chart")))  
         #self.Bind(wx.EVT_MENU, self.plate_gcode, m.Append(-1, _("G-Code Plater"), _(" Compose G-Codes into a single plate")))
         #self.Bind(wx.EVT_MENU, self.exclude, m.Append(-1, _("Excluder"), _(" Exclude parts of the bed from being printed")))
         #self.Bind(wx.EVT_MENU, self.project, m.Append(-1, _("Projector"), _(" Project slices")))
@@ -1015,7 +1096,6 @@ class PronterWindow(MainWindow, pronsole.pronsole):
         m.AppendSubMenu(self.macros_menu, _("&Macros"))
         self.Bind(wx.EVT_MENU, self.new_macro, self.macros_menu.Append(-1, _("<&New...>")))
         self.Bind(wx.EVT_MENU, lambda *e: PronterOptions(self), m.Append(-1, _("&BVM-Run Options呼吸設定"), _(" Options dialog")))
-
         #self.Bind(wx.EVT_MENU, lambda x: threading.Thread(target = lambda: self.do_slice("set")).start(), m.Append(-1, _("Slicing settings"), _(" Adjust slicing settings")))
 
         mItem = m.AppendCheckItem(-1, _("Debug communications"),
@@ -1063,7 +1143,7 @@ class PronterWindow(MainWindow, pronsole.pronsole):
         info = wx.adv.AboutDialogInfo()
 
         info.SetIcon(wx.Icon(iconfile("pronterface.png"), wx.BITMAP_TYPE_PNG))
-        info.SetName('BVM-Run<Ventilator> 0.2.0rc1 , Based on Printrun')
+        info.SetName('BVM-Run<Ventilator> 1.0.0rc1 , Based on Printrun')
         info.SetVersion(printcore.__version__)
 
         description = _("'OSCMS TAIWAN'-BVM-run Bag-Valve-Mask Auto runnig like an ventilator\n\n"
@@ -1109,6 +1189,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
     def _add_settings(self, size):
         self.settings._add(BooleanSetting("monitor", True, _("Monitor printer status"), _("Regularly monitor printer temperatures (required to have functional temperature graph or gauges)"), "Printer"), self.update_monitor)
         #self.settings._add(StringSetting("simarrange_path", "", _("Simarrange command"), _("Path to the simarrange binary to use in the STL plater"), "External"))
+        self.settings._add(StringSetting("simarrange_path", "", _("Simarrange command"), _("Path to the simarrange binary to use in the STL plater"), "Viewer"))
         self.settings._add(BooleanSetting("circular_bed", False, _("Circular build platform"), _("Draw a circular (or oval) build platform instead of a rectangular one"), "Printer"), self.update_bed_viz)
         self.settings._add(SpinSetting("extruders", 0, 1, 5, _("Extruders count"), _("Number of extruders"), "Printer"))
         self.settings._add(BooleanSetting("clamp_jogging", False, _("Clamp manual moves"), _("Prevent manual moves from leaving the specified build dimensions"), "Printer"))
@@ -1167,7 +1248,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.settings._add(FloatSpinSetting("InHale_ratio", 1, 1, 2, _("(In-Hale吸) time Ratio"), _("In-Hale(吸) VS Ex-Hale(呼) 時間比 ex: 2(0.4s) : 3(0.6s)"), "External"))
         self.settings._add(FloatSpinSetting("ExHale_ratio", 1.5, 1, 3, _("(Ex-Hale呼) time Ratio"), _("In-Hale(吸) VS Ex-Hale(呼) 時間比 ex: 2(0.4s) : 3(0.6s)"), "External"))
         self.settings._add(ComboSetting("Motor_Type", "NEMA17 42 Stepper with 1:13.7 reducer", ["NEMA17 42 Stepper with 1:13.7 reducer", "NEMA23 57 Stepper with 1:10 reducer"], _("Choice the supported Motor Type model"), _("Choice the supported Motor Type model"), "External"))
-        self.settings._add(SpinSetting("BVM_RUN_Max_StokeX", 85, 50, 300, _("BVM_RUN 900mL Stoke X (Max Stoke)"), _("BVM_RUN 900mL Stoke X (Max Stoke)"), "External"))
+        self.settings._add(SpinSetting("BVM_RUN_Max_StrokeX", 85, 50, 300, _("BVM_RUN 900mL Stroke X (Max Stroke)"), _("BVM_RUN 900mL Stroke X (Max Stroke)"), "External"))
     
         #0.05 , 0.05, 0.7, 0.05, 0.05
         self.settings._add(FloatSpinSetting("InHale0_start_Xratio",  0.01, 0.01, 0.20, _("In-Hale0 Motor star forward Stroke ratio 往前擠壓行程配比"), _("In-Hale0 Motor start forward Stroke ratio 往前擠壓行程配比"), "External1"))
@@ -1183,7 +1264,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.settings._add(FloatSpinSetting("InHale3_HoldPressure_Tratio",  0.05, 0.05, 0.3, _("In-Hale3 HoldPressure time ratio 穩速保壓time配比"), _("In-Hale3 HoldPresure speed ratio 穩速保壓time配比"), "External1")) 
         
         self.settings._add(FloatSpinSetting("InHale4_descend_Xratio", 0.02, 0.01, 0.2, _("In-Hale4 descend Stroke ratio 減速擠壓行程配比"), _("In-Hale4 descend Stroke ratio 減速擠壓行程配比"), "External1"))          
-        self.settings._add(FloatSpinSetting("InHale4_descend_Tratio",  0.06, 0.01, 0.2, _("In-Hale4 descend time ratio 減速擠壓time配比"), _("In-Hale4 descend Stoke time ratio 減速擠壓time配比"), "External1")) 
+        self.settings._add(FloatSpinSetting("InHale4_descend_Tratio",  0.06, 0.01, 0.2, _("In-Hale4 descend time ratio 減速擠壓time配比"), _("In-Hale4 descend Stroke time ratio 減速擠壓time配比"), "External1")) 
  
         self.settings._add(FloatSpinSetting("InHale5_toStop_Xratio", 0.07, 0.01, 0.2, _("In-Hale5 toStop Stroke ratio 擠壓停止行程配比"), _("In-Hale5 toStop Stroke ratio 擠壓停止行程配比"), "External1")) 
         self.settings._add(FloatSpinSetting("InHale5_toStop_Tratio",  0.20, 0.01, 0.2, _("In-Hale5 toStop time ratio 擠壓停止time配比"), _("In-Hale5 toStop time ratio 擠壓停止time配比"), "External1"))
@@ -1687,8 +1768,8 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         v_date = datetime.date.today()
         filename_mL_bpm_date = '%dmL_%d_%s.GCO' % (V_mL, V_bpm, v_date)
 
-        self.Stoke_X = DB_Volumn_Get_Stoke(db, BVM_id, V_mL, debug_mod=0)
-        Line_data=";InHale Volumn %dmL, Stoke X %.2f, <900mL Stoke X %d>" % (V_mL, self.Stoke_X, self.settings.BVM_RUN_Max_StokeX)
+        self.Stroke_X = DB_Volumn_Get_Stroke(db, BVM_id, V_mL, debug_mod=0)
+        Line_data=";InHale Volumn %dmL, Stroke X %.2f, <900mL Stroke X %d>" % (V_mL, self.Stroke_X, self.settings.BVM_RUN_Max_StrokeX)
         Gcode_Lines.update( {'0' : Line_data} )
         message = _("echo : %s") % (Gcode_Lines.get('0'))
         self.log(message)
@@ -1711,9 +1792,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.statusbar.SetStatusText(message)        
 
         # In-Hale 0 Start 
-        self.InHale0_X = self.Stoke_X  * self.settings.InHale0_start_Xratio
+        self.InHale0_X = self.Stroke_X  * self.settings.InHale0_start_Xratio
         self.InHale0_time = self.InHale_time * self.settings.InHale0_start_Tratio
-        self.InHale0_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.InHale0_X, self.settings.BVM_RUN_Max_StokeX, self.InHale0_time, self.settings.Motor_Type, debug_mod=0) 
+        self.InHale0_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.InHale0_X, self.settings.BVM_RUN_Max_StrokeX, self.InHale0_time, self.settings.Motor_Type, debug_mod=0) 
         
         Line_data="G91 G0 X%.2f F%d" % (self.InHale0_X, self.InHale0_F)
         Gcode_Lines.update( {'3' : Line_data} )
@@ -1723,9 +1804,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
 
         # In-Hale 1 ascend
         """
-        self.InHale1_X = self.Stoke_X *  self.settings.InHale1_ascend_Xratio
+        self.InHale1_X = self.Stroke_X *  self.settings.InHale1_ascend_Xratio
         self.InHale1_time = self.InHale_time * self.settings.InHale1_ascend_Tratio
-        self.InHale1_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.InHale1_X, self.settings.BVM_RUN_Max_StokeX, self.InHale1_time, self.settings.Motor_Type, debug_mod=0) 
+        self.InHale1_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.InHale1_X, self.settings.BVM_RUN_Max_StrokeX, self.InHale1_time, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (self.InHale1_X, self.InHale1_F)
         Gcode_Lines.update( {'4' : Line_data} )
@@ -1737,14 +1818,14 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         ar_t = [0.26, 0.22, 0.18, 0.15, 0.13, 0.11, 0.09, 0.085]  # all  1.225
         ar_d = [0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125]
 
-        self.InHale1_X = self.Stoke_X *  self.settings.InHale1_ascend_Xratio
+        self.InHale1_X = self.Stroke_X *  self.settings.InHale1_ascend_Xratio
         self.InHale1_time = self.InHale_time * self.settings.InHale1_ascend_Tratio
-        self.InHale1_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.InHale1_X, self.settings.BVM_RUN_Max_StokeX, self.InHale1_time, self.settings.Motor_Type, debug_mod=0) 
+        self.InHale1_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.InHale1_X, self.settings.BVM_RUN_Max_StrokeX, self.InHale1_time, self.settings.Motor_Type, debug_mod=0) 
 
         # 01
         InHale1_X_01     = self.InHale1_X * ar_d[0]
         InHale1_time_01 = self.InHale1_time * ar_t[0]
-        InHale1_F_01 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale1_X_01, self.settings.BVM_RUN_Max_StokeX, InHale1_time_01, self.settings.Motor_Type, debug_mod=0) 
+        InHale1_F_01 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale1_X_01, self.settings.BVM_RUN_Max_StrokeX, InHale1_time_01, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale1_X_01, InHale1_F_01)
         Gcode_Lines.update( {'4_01' : Line_data} )
@@ -1755,7 +1836,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 02 
         InHale1_X_02     = self.InHale1_X * ar_d[1]
         InHale1_time_02 = self.InHale1_time * ar_t[1]
-        InHale1_F_02 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale1_X_02, self.settings.BVM_RUN_Max_StokeX, InHale1_time_02, self.settings.Motor_Type, debug_mod=0) 
+        InHale1_F_02 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale1_X_02, self.settings.BVM_RUN_Max_StrokeX, InHale1_time_02, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale1_X_02, InHale1_F_02)
         Gcode_Lines.update( {'4_02' : Line_data} )
@@ -1766,7 +1847,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 03
         InHale1_X_03     = self.InHale1_X * ar_d[2]
         InHale1_time_03 = self.InHale1_time * ar_t[2]
-        InHale1_F_03 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale1_X_03, self.settings.BVM_RUN_Max_StokeX, InHale1_time_03, self.settings.Motor_Type, debug_mod=0) 
+        InHale1_F_03 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale1_X_03, self.settings.BVM_RUN_Max_StrokeX, InHale1_time_03, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale1_X_03, InHale1_F_03)
         Gcode_Lines.update( {'4_03' : Line_data} )
@@ -1777,7 +1858,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 04
         InHale1_X_04     = self.InHale1_X * ar_d[3]
         InHale1_time_04 = self.InHale1_time * ar_t[3]
-        InHale1_F_04 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale1_X_04, self.settings.BVM_RUN_Max_StokeX, InHale1_time_04, self.settings.Motor_Type, debug_mod=0) 
+        InHale1_F_04 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale1_X_04, self.settings.BVM_RUN_Max_StrokeX, InHale1_time_04, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale1_X_04, InHale1_F_04)
         Gcode_Lines.update( {'4_04' : Line_data} )
@@ -1788,7 +1869,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 05
         InHale1_X_05     = self.InHale1_X * ar_d[4]
         InHale1_time_05 = self.InHale1_time * ar_t[4]
-        InHale1_F_05 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale1_X_05, self.settings.BVM_RUN_Max_StokeX, InHale1_time_05, self.settings.Motor_Type, debug_mod=0) 
+        InHale1_F_05 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale1_X_05, self.settings.BVM_RUN_Max_StrokeX, InHale1_time_05, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale1_X_05, InHale1_F_05)
         Gcode_Lines.update( {'4_05' : Line_data} )
@@ -1799,7 +1880,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 06
         InHale1_X_06     = self.InHale1_X * ar_d[5]
         InHale1_time_06 = self.InHale1_time * ar_t[5]
-        InHale1_F_06 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale1_X_06, self.settings.BVM_RUN_Max_StokeX, InHale1_time_06, self.settings.Motor_Type, debug_mod=0) 
+        InHale1_F_06 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale1_X_06, self.settings.BVM_RUN_Max_StrokeX, InHale1_time_06, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale1_X_06, InHale1_F_06)
         Gcode_Lines.update( {'4_06' : Line_data} )
@@ -1810,7 +1891,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 07
         InHale1_X_07     = self.InHale1_X * ar_d[6]
         InHale1_time_07 = self.InHale1_time * ar_t[6]
-        InHale1_F_07 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale1_X_07, self.settings.BVM_RUN_Max_StokeX, InHale1_time_07, self.settings.Motor_Type, debug_mod=0) 
+        InHale1_F_07 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale1_X_07, self.settings.BVM_RUN_Max_StrokeX, InHale1_time_07, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale1_X_07, InHale1_F_07)
         Gcode_Lines.update( {'4_07' : Line_data} )
@@ -1821,7 +1902,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 08
         InHale1_X_08     = self.InHale1_X * ar_d[7]
         InHale1_time_08 = self.InHale1_time * ar_t[7]
-        InHale1_F_08 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale1_X_08, self.settings.BVM_RUN_Max_StokeX, InHale1_time_08, self.settings.Motor_Type, debug_mod=0) 
+        InHale1_F_08 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale1_X_08, self.settings.BVM_RUN_Max_StrokeX, InHale1_time_08, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale1_X_08, InHale1_F_08)
         Gcode_Lines.update( {'4_08' : Line_data} )
@@ -1833,9 +1914,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         Accelrate_Over_time = self.InHale1_time * 0.225
 
         # In-Hale 2 stable
-        self.InHale2_X = self.Stoke_X *  self.settings.InHale2_stable_Xratio
+        self.InHale2_X = self.Stroke_X *  self.settings.InHale2_stable_Xratio
         self.InHale2_time = (self.InHale_time * self.settings.InHale2_stable_Tratio) + Accelrate_Over_time
-        self.InHale2_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.InHale2_X, self.settings.BVM_RUN_Max_StokeX, self.InHale2_time, self.settings.Motor_Type, debug_mod=0) 
+        self.InHale2_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.InHale2_X, self.settings.BVM_RUN_Max_StrokeX, self.InHale2_time, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (self.InHale2_X, self.InHale2_F)
         Gcode_Lines.update( {'5' : Line_data} )
@@ -1845,9 +1926,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
 
         # In-Hale 3 descend
         """
-        self.InHale3_X = self.Stoke_X *  self.settings.InHale3_HoldPressure_Xratio
+        self.InHale3_X = self.Stroke_X *  self.settings.InHale3_HoldPressure_Xratio
         self.InHale3_time = self.InHale_time * self.settings.InHale3_HoldPressure_Tratio
-        self.InHale3_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.InHale3_X, self.settings.BVM_RUN_Max_StokeX, self.InHale3_time, self.settings.Motor_Type, debug_mod=0) 
+        self.InHale3_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.InHale3_X, self.settings.BVM_RUN_Max_StrokeX, self.InHale3_time, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (self.InHale3_X, self.InHale3_F)
         Gcode_Lines.update( {'6' : Line_data} )
@@ -1855,9 +1936,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.log(message)
         self.statusbar.SetStatusText(message)        
         """
-        self.InHale3_X = self.Stoke_X *  self.settings.InHale3_HoldPressure_Xratio
+        self.InHale3_X = self.Stroke_X *  self.settings.InHale3_HoldPressure_Xratio
         self.InHale3_time = self.InHale_time * self.settings.InHale3_HoldPressure_Tratio
-        self.InHale3_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.InHale3_X, self.settings.BVM_RUN_Max_StokeX, self.InHale3_time, self.settings.Motor_Type, debug_mod=0) 
+        self.InHale3_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.InHale3_X, self.settings.BVM_RUN_Max_StrokeX, self.InHale3_time, self.settings.Motor_Type, debug_mod=0) 
 
         ar_t = [0.13, 0.15, 0.17, 0.19, 0.22, 0.25, 0.28, 0.33]  # all  1.6
         ar_d = [0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125]  
@@ -1865,7 +1946,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 01
         InHale3_X_01     = self.InHale3_X * ar_d[0]
         InHale3_time_01 = self.InHale3_time * ar_t[0]
-        InHale3_F_01 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale3_X_01, self.settings.BVM_RUN_Max_StokeX, InHale3_time_01, self.settings.Motor_Type, debug_mod=0) 
+        InHale3_F_01 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale3_X_01, self.settings.BVM_RUN_Max_StrokeX, InHale3_time_01, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale3_X_01, InHale3_F_01)
         Gcode_Lines.update( {'6_01' : Line_data} )
@@ -1876,7 +1957,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 02
         InHale3_X_02     = self.InHale3_X * ar_d[1]
         InHale3_time_02 = self.InHale3_time * ar_t[1]
-        InHale3_F_02 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale3_X_02, self.settings.BVM_RUN_Max_StokeX, InHale3_time_02, self.settings.Motor_Type, debug_mod=0) 
+        InHale3_F_02 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale3_X_02, self.settings.BVM_RUN_Max_StrokeX, InHale3_time_02, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale3_X_02, InHale3_F_02)
         Gcode_Lines.update( {'6_02' : Line_data} )
@@ -1887,7 +1968,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 03
         InHale3_X_03     = self.InHale3_X * ar_d[2]
         InHale3_time_03 = self.InHale3_time * ar_t[2]
-        InHale3_F_03 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale3_X_03, self.settings.BVM_RUN_Max_StokeX, InHale3_time_03, self.settings.Motor_Type, debug_mod=0) 
+        InHale3_F_03 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale3_X_03, self.settings.BVM_RUN_Max_StrokeX, InHale3_time_03, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale3_X_03, InHale3_F_03)
         Gcode_Lines.update( {'6_03' : Line_data} )
@@ -1898,7 +1979,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 04
         InHale3_X_04     = self.InHale3_X * ar_d[3]
         InHale3_time_04 = self.InHale3_time * ar_t[3]
-        InHale3_F_04 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale3_X_04, self.settings.BVM_RUN_Max_StokeX, InHale3_time_04, self.settings.Motor_Type, debug_mod=0) 
+        InHale3_F_04 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale3_X_04, self.settings.BVM_RUN_Max_StrokeX, InHale3_time_04, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale3_X_04, InHale3_F_04)
         Gcode_Lines.update( {'6_04' : Line_data} )
@@ -1909,7 +1990,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 05
         InHale3_X_05     = self.InHale3_X * ar_d[4]
         InHale3_time_05 = self.InHale3_time * ar_t[4]
-        InHale3_F_05 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale3_X_05, self.settings.BVM_RUN_Max_StokeX, InHale3_time_05, self.settings.Motor_Type, debug_mod=0) 
+        InHale3_F_05 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale3_X_05, self.settings.BVM_RUN_Max_StrokeX, InHale3_time_05, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale3_X_05, InHale3_F_05)
         Gcode_Lines.update( {'6_05' : Line_data} )
@@ -1920,7 +2001,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 06
         InHale3_X_06     = self.InHale3_X * ar_d[5]
         InHale3_time_06 = self.InHale3_time * ar_t[5]
-        InHale3_F_06 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale3_X_06, self.settings.BVM_RUN_Max_StokeX, InHale3_time_06, self.settings.Motor_Type, debug_mod=0) 
+        InHale3_F_06 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale3_X_06, self.settings.BVM_RUN_Max_StrokeX, InHale3_time_06, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale3_X_06, InHale3_F_06)
         Gcode_Lines.update( {'6_06' : Line_data} )
@@ -1931,7 +2012,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 07
         InHale3_X_07     = self.InHale3_X * ar_d[6]
         InHale3_time_07 = self.InHale3_time * ar_t[6]
-        InHale3_F_07 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale3_X_07, self.settings.BVM_RUN_Max_StokeX, InHale3_time_07, self.settings.Motor_Type, debug_mod=0) 
+        InHale3_F_07 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale3_X_07, self.settings.BVM_RUN_Max_StrokeX, InHale3_time_07, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale3_X_07, InHale3_F_07)
         Gcode_Lines.update( {'6_07' : Line_data} )
@@ -1942,7 +2023,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         # 08
         InHale3_X_08     = self.InHale3_X * ar_d[7]
         InHale3_time_08 = self.InHale3_time * ar_t[7]
-        InHale3_F_08 = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, InHale3_X_08, self.settings.BVM_RUN_Max_StokeX, InHale3_time_08, self.settings.Motor_Type, debug_mod=0) 
+        InHale3_F_08 = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, InHale3_X_08, self.settings.BVM_RUN_Max_StrokeX, InHale3_time_08, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (InHale3_X_08, InHale3_F_08)
         Gcode_Lines.update( {'6_08' : Line_data} )
@@ -1951,9 +2032,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.statusbar.SetStatusText(message)                    
 
         # In-Hale 4 HoldPressure
-        self.InHale4_X = self.Stoke_X *  self.settings.InHale4_descend_Xratio
+        self.InHale4_X = self.Stroke_X *  self.settings.InHale4_descend_Xratio
         self.InHale4_time = self.InHale_time * self.settings.InHale4_descend_Tratio
-        self.InHale4_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.InHale4_X, self.settings.BVM_RUN_Max_StokeX, self.InHale4_time, self.settings.Motor_Type, debug_mod=0) 
+        self.InHale4_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.InHale4_X, self.settings.BVM_RUN_Max_StrokeX, self.InHale4_time, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (self.InHale4_X, self.InHale4_F)
         Gcode_Lines.update( {'7' : Line_data} )
@@ -1962,9 +2043,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.statusbar.SetStatusText(message)
 
         # In-Hale 5 descend
-        self.InHale5_X = self.Stoke_X - (self.InHale4_X + self.InHale3_X + self.InHale2_X + self.InHale1_X + self.InHale0_X)
+        self.InHale5_X = self.Stroke_X - (self.InHale4_X + self.InHale3_X + self.InHale2_X + self.InHale1_X + self.InHale0_X)
         self.InHale5_time = self.InHale_time * self.settings.InHale5_toStop_Tratio
-        self.InHale5_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.InHale5_X, self.settings.BVM_RUN_Max_StokeX, self.InHale5_time, self.settings.Motor_Type, debug_mod=0) 
+        self.InHale5_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.InHale5_X, self.settings.BVM_RUN_Max_StrokeX, self.InHale5_time, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X%.2f F%d" % (self.InHale5_X, self.InHale5_F)
         Gcode_Lines.update( {'8' : Line_data} )
@@ -1975,9 +2056,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         #########
 
         # Ex-Hale 0 Start
-        self.ExHale0_X = self.Stoke_X  * self.settings.ExHale0_start_Xratio
+        self.ExHale0_X = self.Stroke_X  * self.settings.ExHale0_start_Xratio
         self.ExHale0_time = self.ExHale_time * self.settings.ExHale0_start_Tratio
-        self.ExHale0_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.ExHale0_X, self.settings.BVM_RUN_Max_StokeX, self.ExHale0_time, self.settings.Motor_Type, debug_mod=0) 
+        self.ExHale0_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.ExHale0_X, self.settings.BVM_RUN_Max_StrokeX, self.ExHale0_time, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X-%.2f F%d" % (self.ExHale0_X, self.ExHale0_F)
         Gcode_Lines.update( {'9' : Line_data} )
@@ -1986,9 +2067,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.statusbar.SetStatusText(message)
 
         # Ex-Hale 1 ascending
-        self.ExHale1_X = self.Stoke_X  * self.settings.ExHale1_ascend_Xratio
+        self.ExHale1_X = self.Stroke_X  * self.settings.ExHale1_ascend_Xratio
         self.ExHale1_time = self.ExHale_time * self.settings.ExHale1_ascend_Tratio
-        self.ExHale1_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.ExHale1_X, self.settings.BVM_RUN_Max_StokeX, self.ExHale1_time, self.settings.Motor_Type, debug_mod=0) 
+        self.ExHale1_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.ExHale1_X, self.settings.BVM_RUN_Max_StrokeX, self.ExHale1_time, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X-%.2f F%d" % (self.ExHale1_X, self.ExHale1_F)
         Gcode_Lines.update( {'10' : Line_data} )
@@ -1999,9 +2080,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         #...        
 
         # Ex-Hale 2 ascending
-        self.ExHale2_X = self.Stoke_X  * self.settings.ExHale2_stable_Xratio
+        self.ExHale2_X = self.Stroke_X  * self.settings.ExHale2_stable_Xratio
         self.ExHale2_time = self.ExHale_time * self.settings.ExHale2_stable_Tratio
-        self.ExHale2_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.ExHale2_X, self.settings.BVM_RUN_Max_StokeX, self.ExHale2_time, self.settings.Motor_Type, debug_mod=0) 
+        self.ExHale2_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.ExHale2_X, self.settings.BVM_RUN_Max_StrokeX, self.ExHale2_time, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X-%.2f F%d" % (self.ExHale2_X, self.ExHale2_F)
         Gcode_Lines.update( {'11' : Line_data} )
@@ -2010,9 +2091,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.statusbar.SetStatusText(message) 
 
         # Ex-Hale 3 HoldPressure
-        self.ExHale3_X = self.Stoke_X  * self.settings.ExHale3_HoldPressure_Xratio
+        self.ExHale3_X = self.Stroke_X  * self.settings.ExHale3_HoldPressure_Xratio
         self.ExHale3_time = self.ExHale_time * self.settings.ExHale3_HoldPresure_Tratio
-        self.ExHale3_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.ExHale3_X, self.settings.BVM_RUN_Max_StokeX, self.ExHale3_time, self.settings.Motor_Type, debug_mod=0) 
+        self.ExHale3_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.ExHale3_X, self.settings.BVM_RUN_Max_StrokeX, self.ExHale3_time, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X-%.2f F%d" % (self.ExHale3_X, self.ExHale3_F)
         Gcode_Lines.update( {'12' : Line_data} )
@@ -2021,9 +2102,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.statusbar.SetStatusText(message) 
 
         # Ex-Hale 4 descending
-        self.ExHale4_X = self.Stoke_X  * self.settings.ExHale4_descend_Xratio
+        self.ExHale4_X = self.Stroke_X  * self.settings.ExHale4_descend_Xratio
         self.ExHale4_time = self.ExHale_time * self.settings.ExHale4_descend_Tratio
-        self.ExHale4_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.ExHale4_X, self.settings.BVM_RUN_Max_StokeX, self.ExHale4_time, self.settings.Motor_Type, debug_mod=0) 
+        self.ExHale4_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.ExHale4_X, self.settings.BVM_RUN_Max_StrokeX, self.ExHale4_time, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X-%.2f F%d" % (self.ExHale4_X, self.ExHale4_F)
         Gcode_Lines.update( {'13' : Line_data} )
@@ -2032,9 +2113,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.statusbar.SetStatusText(message)
 
         # Ex-Hale 5 toStop
-        self.ExHale5_X = self.Stoke_X - (self.ExHale4_X + self.ExHale3_X + self.ExHale2_X + self.ExHale1_X + self.ExHale0_X)
+        self.ExHale5_X = self.Stroke_X - (self.ExHale4_X + self.ExHale3_X + self.ExHale2_X + self.ExHale1_X + self.ExHale0_X)
         self.ExHale5_time = self.ExHale_time * self.settings.ExHale5_toStop_Tratio  
-        self.ExHale5_F = DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, self.ExHale5_X, self.settings.BVM_RUN_Max_StokeX, self.ExHale5_time, self.settings.Motor_Type, debug_mod=0) 
+        self.ExHale5_F = DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, self.ExHale5_X, self.settings.BVM_RUN_Max_StrokeX, self.ExHale5_time, self.settings.Motor_Type, debug_mod=0) 
 
         Line_data="G0 X-%.2f F%d" % (self.ExHale5_X, self.ExHale5_F)
         Gcode_Lines.update( {'14' : Line_data} )
@@ -2068,7 +2149,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.statusbar.SetStatusText(message)                      
 
         """
-        DB_Get_speed_Fvalue(db,self.Stoke_X,V_bpm, 0, 5, total_x, t, Motor_Type, debug_mod=0) 
+        DB_Get_speed_Fvalue(db,self.Stroke_X,V_bpm, 0, 5, total_x, t, Motor_Type, debug_mod=0) 
 
         self.settings.InHale0_stat_Xratio
         self.settings.InHale1_ascend_Xratio
@@ -2522,15 +2603,16 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
             if gline_s is not None:
                 temp = gline_s
                 if self.display_gauges: wx.CallAfter(self.bedtgauge.SetTarget, temp)
-                if self.display_graph: wx.CallAfter(self.graph.SetBedTargetTemperature, temp)
+                #if self.display_graph: wx.CallAfter(self.graph.SetBedTargetTemperature, temp)
         elif gline.command in ["M106"]:
             gline_s=gcoder.S(gline)
             fanpow=255
             if gline_s is not None:
                 fanpow=gline_s
-            if self.display_graph: wx.CallAfter(self.graph.SetFanPower, fanpow)
+            #if self.display_graph: wx.CallAfter(self.graph.SetFanPower, fanpow)
         elif gline.command in ["M107"]:
-            if self.display_graph: wx.CallAfter(self.graph.SetFanPower, 0)
+            pass
+            #if self.display_graph: wx.CallAfter(self.graph.SetFanPower, 0)
         elif gline.command.startswith("T"):
             tool = gline.command[1:]
             if hasattr(self, "extrudersel"): wx.CallAfter(self.extrudersel.SetValue, tool)

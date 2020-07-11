@@ -1,5 +1,9 @@
-# BVM-run 0.2
-    This version of BVM-run needs Python 3 and wxPython 4 and pysqlite3.
+# BVM-run 1.0
+  This version of BVM-run needs Python3 and wxPython4.x,matplotlib and pysqlite3.
+  more details require python3 modules please check requirements.txt.
+  Add to support DIY Pitot Tube Flow Meter and BMP180(or BMP280) Presure sernsor, which connected with second serial port, you can setup the Serial port via Main Menu
+  -> Settings -> BVM Run Options -> BVM Run Ventilator Settings
+  BVM-run 0.2
     Add to support NEMA23 57 Stepper motor, you can chioce "NEMA17 42 Stepper" or "NEMA23 57 Stepper" from Menu-> Settings -> BVM Run Options
   BVM-run 0.1 first release
 [![Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/youtube_image001.jpg)](https://www.youtube.com/watch?v=xGEwENa0d8M)

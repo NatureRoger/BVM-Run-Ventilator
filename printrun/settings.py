@@ -25,8 +25,6 @@ from functools import wraps
 from .utils import parse_build_dimensions
 
 
-
-
 def setting_add_tooltip(func):
     @wraps(func)
     def decorator(self, *args, **kwargs):
@@ -225,14 +223,19 @@ class BuildDimensionsSetting(wxSetting):
     def get_widget(self, parent):
         from wx.lib.agw.floatspin import FloatSpin
         import wx
+        
         build_dimensions = parse_build_dimensions(self.value)
+        
         self.widgets = []
+
         def w(val, m, M):
             self.widgets.append(wx.SpinCtrlDouble(parent, -1, initial = val, min = m, max = M))
             self.widgets[-1].SetDigits(2)
         addlabel = lambda name, pos: self.widget.Add(wx.StaticText(parent, -1, name), pos = pos, flag = wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, border = 5)
         addwidget = lambda *pos: self.widget.Add(self.widgets[-1], pos = pos, flag = wx.RIGHT, border = 5)
+        
         self.widget = wx.GridBagSizer()
+        
         addlabel(_("Width"), (0, 0))
         w(build_dimensions[0], 0, 2000)
         addwidget(0, 1)
@@ -260,6 +263,7 @@ class BuildDimensionsSetting(wxSetting):
         addlabel(_("Z home pos."), (2, 4))
         w(build_dimensions[8], -2000, 2000)
         self.widget.Add(self.widgets[-1], pos = (2, 5))
+        
         return self.widget
 
     def update(self):
@@ -274,6 +278,12 @@ class Settings:
         # the initial value determines the type
         self._add(StringSetting("port", "", _("Serial port"), _("Port used to communicate with BVM-run Ventilator")))
         self._add(ComboSetting("baudrate", 115200, self.__baudrate_list(), _("Baud rate"), _("Communications Speed")))
+        self._add(StringSetting("FlowMeter_port", "", _("FlowMeter Serial port"), _("Port used to communicate with FlowMeter")))
+        self._add(ComboSetting("FlowMeter_baudrate", 9600, self.__baudrate_list(), _("Baud rate"), _("Communications Speed with FlowMeter")))        
+        #self._add(BooleanSetting("Monitor_Server_mode", False, _("Monitor Server mode for sending warning and emerency message to Monitoring<Mysql>‎ Server"), _("When using a Ethernet wire connection to the BVM-run Ventilator, the Monitor Server mode is tuned on and the Flow sensor/ Pressure sensor is active runing curve chart <matplot chart>, then the BVM-run Ventilator will send warning and emerency message to Monitoring<Mysql>‎ Server.")), root.update_Monitor_Server_mode)
+        self._add(BooleanSetting("Monitor_Server_mode", False, _("Monitor Server mode for sending warning and emerency message to Monitoring<Mysql>‎ Server"), _("When using a Ethernet wire connection to the BVM-run Ventilator, the Monitor Server mode is tuned on and the Flow sensor/ Pressure sensor is active runing curve chart <matplot chart>, then the BVM-run Ventilator will send warning and emerency message to Monitoring<Mysql>‎ Server.")))        
+        self._add(StringSetting("Monitor_Mysql_Server_ip", "10.1.0.1", _("Monitor Mysql database Server ip address"), _("Port used to communicate with BVM-run Ventilator")))
+        self._add(StringSetting("Monitor_Mysql_Server_port", "3306", _("Monitor Mysql database Server ip address"), _("Port used to communicate with Monitor Mysql database Server by BVM-run Ventilator")))
         self._add(BooleanSetting("tcp_streaming_mode", False, _("TCP streaming mode"), _("When using a TCP connection to the BVM-run Ventilator, the streaming mode will not wait for acks from the BVM-run Ventilator to send new commands. This will break things such as ETA prediction, but can result in smoother BVM-run Ventilator running.")), root.update_tcp_streaming_mode)
         self._add(BooleanSetting("rpc_server", True, _("RPC server"), _("Enable RPC server to allow remotely querying BVM-run Ventilator running status")), root.update_rpc_server)
         self._add(BooleanSetting("dtr", True, _("DTR"), _("Disabling DTR would prevent Arduino (RAMPS) from resetting upon connection"), "Printer"))
@@ -285,11 +295,10 @@ class Settings:
         self._add(SpinSetting("bedtemp_pla", 60, 0, 400, _("Bed temperature for PLA"), _("Heated Build Platform temp for PLA (deg C)"), "Printer"))
         self._add(SpinSetting("temperature_abs", 230, 0, 400, _("Extruder temperature for ABS"), _("Extruder temp for ABS (deg C)"), "Printer"))
         self._add(SpinSetting("temperature_pla", 185, 0, 400, _("Extruder temperature for PLA"), _("Extruder temp for PLA (deg C)"), "Printer"))
-        """    
+        """
         self._add(SpinSetting("xy_feedrate", 3000, 0, 50000, _("X && Y manual feedrate"), _("Feedrate for Control Panel Moves in X and Y (mm/min)"), "Printer"))
         self._add(SpinSetting("z_feedrate", 100, 0, 50000, _("Z manual feedrate"), _("Feedrate for Control Panel Moves in Z (mm/min)"), "Printer"))
         self._add(SpinSetting("e_feedrate", 100, 0, 1000, _("E manual feedrate"), _("Feedrate for Control Panel Moves in Extrusions (mm/min)"), "Printer"))
-   
         """
         defaultslicerpath=""
         if sys.platform=="darwin" and getattr( sys, 'frozen', False ):

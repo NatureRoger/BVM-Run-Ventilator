@@ -16,6 +16,24 @@
 import wx
 import re
 
+import time
+import logging
+import threading
+import sys
+
+"""
+print ('numpy as np')
+import numpy as np
+print ('matplotlib.figure')
+import matplotlib.figure as mfigure
+print ('matplotlib.animation')
+import matplotlib.animation as manim
+print ('matplotlib.pyplot as plt')
+import matplotlib.pyplot as plt #import matplotlib library
+
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
+"""
+
 class MacroEditor(wx.Dialog):
     """Really simple editor to edit macro definitions"""
 
@@ -190,6 +208,114 @@ def PronterOptions(pronterface):
             if setting.value != old_value:
                 pronterface.set(setting.name, setting.value)
     dialog.Destroy()
+
+"""
+Add by Roger 2020/06/30
+
+
+class plotPanel(wx.Panel):
+    def __init__(self, parent, strPort, id=-1, dpi=None, **kwargs):
+    #    super().__init__(parent, id=id, **kwargs)    
+    #def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        self.fig = mfigure.Figure()
+        #self.ax1 = self.fig.add_subplot(211)
+        #self.ax2 = self.fig.add_subplot(311)
+        self.ax1 = self.fig.add_axes([0.1, 0.5, 0.8, 0.4],
+                   xticklabels=[], ylim=(-10, 50))
+        self.ax2 = self.fig.add_axes([0.1, 0.1, 0.8, 0.4],
+                   ylim=(-10, 70))       
+        self.canv = FigureCanvasWxAgg(self, wx.ID_ANY, self.fig)
+
+        #self.arduinoData = serial.Serial(strPort, 9600) #Creating our serial object named arduinoData
+        
+        self.values1 = []
+        self.values2 = []
+        self.arduinoString =''
+        self.animator = manim.FuncAnimation(self.fig,self.anim, interval=100)
+
+        # Now put all into a sizer
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        # This way of adding to sizer allows resizing
+        sizer.Add(self.canv, 1, wx.LEFT | wx.TOP | wx.GROW)
+        ## Best to allow the toolbar to resize!
+        #sizer.Add(self.toolbar, 0, wx.GROW)
+        self.SetSizer(sizer)
+        self.Fit()
+
+    def anim(self,i):
+        if i%50 == 0:
+            self.values1 = []
+            self.values2 = []
+        else:
+            ### read serial line
+            ###data = float(self.ser.readline().decode('utf-8'))
+            #while (self.arduinoData.inWaiting()==0): #Wait here until there is data
+            #    pass #do nothing
+            #self.arduinoString = self.arduinoData.readline() #read the line of text from the serial port
+            ##print(arduinoString)
+            ##arduinoString = arduinoString.encode()
+            #dataArray = arduinoString.decode().strip().split(',')   #Split it into an array called dataArray
+                                                   # str→bytes：encode()方法。str通过encode()方法可以转换为bytes。
+                                                   #bytes→str：decode()方法。如果我们从网络或磁盘上读取了字节流，那么读到的数据就是bytes。要把bytes变为str，就需要用decode()方法。
+            ###T(°C) = (T(°F) - 32) / 1.8
+            #temp = (float( dataArray[0] ) - 32 ) /1.8  #Convert first element to floating number and put in temp C
+            #P =    float( dataArray[1] ) * 1.0197442889221   #Convert second element to floating number and put in P  cmH2O
+                                                       #Hectopascals to centimeters of water conversion formula
+                                                       #Pressure(cmH2O) = Pressure (hPa) × 1.0197442889221
+            #print ("TempC_cmH2O : " % (temp, P))
+
+            temp = np.random.rand() * 50
+            P =    float( np.random.rand() ) * 1.0197442889221 * 40
+            self.values1.append(P)
+            self.values2.append(temp)
+
+        self.ax1.clear()
+        self.ax1.set_xlim([0,50])
+        self.ax1.set_ylim([-10,50]) 
+        self.ax1.set_xlabel('X time') 
+        self.ax1.set_ylabel('Y Pressure (cmH2O)')   
+        self.ax2.clear()
+        self.ax2.set_xlim([0,50])
+        self.ax2.set_ylim([-10,70]) 
+        self.ax2.set_xlabel('X time') 
+        self.ax2.set_ylabel('Y Flow (Lpm)')                       
+        self.ax1.plot(np.arange(1,i%50+1),self.values1,'b^-') ## 'd-'
+        self.ax2.plot(np.arange(1,i%50+1),self.values2,'ro-')       
+        return 
+
+class PronterMatplotDialog(wx.Dialog):
+#class PronterMatplotDialog(wx.Window):
+    #Matplot Chat
+    def __init__(self, pronterface):
+        #wx.Window.__init__(self)
+        wx.Dialog.__init__(self, parent = None, title = _("Matplot Chat"),
+                           size = (800, 600), style = wx.DEFAULT_DIALOG_STYLE)
+        panel = wx.Panel(self)
+        #header = wx.StaticBox(panel, label = _("Matplot Chat"))
+        #sbox = wx.StaticBoxSizer(header, wx.VERTICAL)
+        #notebook = wx.Notebook(panel)
+        all_settings = pronterface.settings._all_settings()
+        self.panel = plotPanel(panel, 'COM3')
+        #self.Show()
+
+    def stop(self):
+        self.animator.event_source.stop()   
+
+
+def PronterMatplot(pronterface):
+    dialog = PronterMatplotDialog(pronterface)
+    if dialog.ShowModal() == wx.ID_OK:
+        for setting in pronterface.settings._all_settings():
+            old_value = setting.value
+            setting.update()
+            if setting.value != old_value:
+                pronterface.set(setting.name, setting.value)
+    dialog.Destroy()
+
+
+End Add by Roger 2020/06/30
+"""        
 
 class ButtonEdit(wx.Dialog):
     """Custom button edit dialog"""

@@ -21,6 +21,17 @@ import os
 import types
 import wx
 
+import numpy as np
+import matplotlib.figure as mfigure
+import matplotlib.animation as manim
+import matplotlib.pyplot as plt #import matplotlib library
+
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
+
+import serial # import Serial Library
+import random
+random.seed()
+
 def patch_method(obj, method, replacement):
     orig_handler = getattr(obj, method)
 
@@ -282,6 +293,175 @@ class PlaterPanel(wx.Panel):
     def export_to(self, name):
         raise NotImplementedError
 
+class PlaterPanel1(wx.Panel):
+    def __init__(self, **kwargs):
+        self.destroy_on_done = False
+        parent = kwargs.get("parent", None)
+        style = wx.DEFAULT_FRAME_STYLE & (~wx.CLOSE_BOX) & (~wx.MAXIMIZE_BOX)
+        super(PlaterPanel, self).__init__(parent = parent, style=style)
+        #self.prepare_ui(**kwargs)
+
+class plotPanel(wx.Panel):
+    def __init__(self, parent, strPort, Baudrate, id=-1, dpi=None, **kwargs):
+    #    super().__init__(parent, id=id, **kwargs)    
+    #def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        
+        self.fig = mfigure.Figure()
+        #self.ax1 = self.fig.add_subplot(211)
+        #self.ax2 = self.fig.add_subplot(311)
+        self.ax1 = self.fig.add_axes([0.1, 0.5, 0.8, 0.4],
+                   xticklabels=[], ylim=(-2, 50))
+        self.ax2 = self.fig.add_axes([0.1, 0.1, 0.8, 0.4],
+                   ylim=(-2, 300))       
+        self.canv = FigureCanvasWxAgg(self, wx.ID_ANY, self.fig)
+
+        if strPort!='None':
+            self.arduinoData = serial.Serial(strPort, Baudrate) #Creating our serial object named arduinoData
+        
+        self.PORT=strPort
+        self.values1 = []
+        self.values2 = []        
+        self.arduinoString =''
+
+        self.base_P_TEST_TIMES=10
+        self.cnt=0
+        self.Total_P=0
+        self.base_P=0
+        self.Delta_P=0
+        self.Total_temp=0
+        self.base_temp=0
+
+        self.x_time=0
+        self.x_width=100
+
+        self.r_density      = 1.204    ## density of fluid (kg/m3)
+        self.pi             = 3.141592653589793
+        self.Radius         = 0.012    ## "Radius" : inner diameter of the 3d print pipe 
+                             ##            12mm ->  0.012m / 2 = 0.006m   
+        self.radius_tube    = 0.002    ## "radius_tube" : diameter of the Pitot Tube
+                                  ##       4mm ->  0.004m / 2 = 0.002m  
+
+        self.animator = manim.FuncAnimation(self.fig,self.anim, interval=100)
+
+        # Now put all into a sizer
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        # This way of adding to sizer allows resizing
+        sizer.Add(self.canv, 1, wx.LEFT | wx.TOP | wx.GROW)
+        ## Best to allow the toolbar to resize!
+        #sizer.Add(self.toolbar, 0, wx.GROW)
+        self.SetSizer(sizer)
+        self.Fit()
+
+    def anim(self,i):
+        arduinoString_ok=False
+        dataArray=[0,0,0,0]
+
+        ### read serial line
+        if self.PORT!='None':
+            while (self.arduinoData.inWaiting()==0): #Wait here until there is data
+                pass #do nothing
+            arduinoString = self.arduinoData.readline() #read the line of text from the serial port
+            #print(arduinoString)
+            #print ('arduinoString[0] %s' % (arduinoString[0]))
+            #if(arduinoString[0]!=0xfe and arduinoString[0]!=0xb7):
+            if(arduinoString[0]<128):
+              if ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
+                print(arduinoString.decode())
+                arduinoString_ok==False
+              elif(',' in arduinoString.decode()): 
+                arduinoString_ok=True 
+                dataArray = arduinoString.decode().strip().split(',')   #Split it into an array called dataArray
+                                                       # str→bytes：encode()方法。str通过encode()方法可以转换为bytes。
+                                                       #bytes→str：decode()方法。如果我们从网络或磁盘上读取了字节流，那么读到的数据就是bytes。要把bytes变为str，就需要用decode()方法。
+                #line 115, in <module> if ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
+                #UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfe in position 0: invalid start byte
+        else:
+            dataArray[0] = random.randint(27, 32)
+            dataArray[1] = random.randint(1007, 1042)
+            dataArray[2] = random.randint(27, 32)
+            dataArray[3] = random.randint(0, 28)  ## diff_P 0->400
+            arduinoString_ok=True
+
+        if (arduinoString_ok==True):
+            Flow_value = 0
+
+            #T(°C) = (T(°F) - 32) / 1.8
+            #temp = (float( dataArray[0] ) - 32 ) /1.8 #Convert first element to floating number and put in temp C
+            temp = float( dataArray[0] )               # Get (°C) 
+            P =    round((float( dataArray[1] ) * 1.0197442889221),3)    #Convert second element to floating number and put in P  cmH2O
+                                                       #Hectopascals to centimeters of water conversion formula
+                                                       #Pressure(cmH2O) = Pressure (hPa) × 1.0197442889221
+            SDP_temp= float( dataArray[2] )            # Get SDP810-500PA TEMPRATURE (°C) 
+            diff_P =  float( dataArray[3] ) 
+
+            if diff_P<=0 :
+               Velocity = 0
+               Flow_value = 0
+            else:
+              Velocity   = np.sqrt( 2 *  diff_P / self.r_density  ) 
+              Flow_value = round(self.pi * (self.Radius*self.Radius-self.radius_tube*self.radius_tube) *  Velocity * 1000, 3)
+              Flow_value = Flow_value * 60
+            #print ("; BMP180 TempC, cmH2O ; DP810-500PA TempC, Pitot Tube Diff Pressrue : %s, %s, %s, %s, %s" % (temp, P,SDP_temp, diff_P, Flow_value))
+            
+            if i < self.base_P_TEST_TIMES and P>0:
+              self.Total_P = self.Total_P + P
+              self.Total_temp = self.Total_temp + temp
+              self.cnt=self.cnt+1
+            elif i == self.base_P_TEST_TIMES: 
+              self.base_P = self.Total_P / (self.cnt)
+              self.base_temp = self.Total_temp / (self.cnt)
+              if self.PORT=='None':
+                self.base_P = 1027
+                self.base_temp = 28
+              #print ('base_P = %s , base_temp = %s' % (self.base_P, self.base_temp))
+              self.values1 = []
+              self.values2 = []
+              #self.Delta_P= round(P - self.base_P, 3)
+              #self.values1.append(self.Delta_P)
+              #self.values2.append(Flow_value)
+              self.x_time=0
+            else:  
+              self.x_time=self.x_time+1 
+
+              self.Delta_P= round(P - self.base_P, 3)
+              self.values1.append(self.Delta_P) 
+              self.values2.append(Flow_value)
+              ##print(self.values1)
+              ##print(self.values2)
+        
+              self.ax1.clear()
+              self.ax1.set_xlim([0,self.x_width])
+              self.ax1.set_ylim([-2,50]) 
+              self.ax1.set_xlabel('X time') 
+
+              self.ax1.set_ylabel('Pressure (cmH2O)')   
+              self.ax2.clear()
+              self.ax2.set_xlim([0,self.x_width])
+              self.ax2.set_ylim([-2,300]) 
+              self.ax2.set_xlabel('X time') 
+              self.ax2.set_ylabel('Flow (L/Min)')                       
+              self.ax1.plot(np.arange(1,self.x_time+1),self.values1,'.-b') ## 'b^-'  'd-'
+              self.ax2.plot(np.arange(1,self.x_time+1),self.values2,'.-g') ## 'ro-'
+
+        if (self.x_time%self.x_width==0) :
+          if len(self.values1)>0:
+            self.values1.pop(0)
+            self.values2.pop(0)
+            self.x_time = self.x_time-1       
+                        
+        return  
+  
+
+    def prepare_ui(self, filenames = [], callback = None, parent = None, build_dimensions = None):
+        self.filenames = filenames
+        self.mainsizer = wx.BoxSizer(wx.HORIZONTAL)
+        panel = self.menupanel = wx.Panel(self, -1)
+        sizer = self.menusizer = wx.GridBagSizer()
+        self.l = wx.ListBox(panel)
+        sizer.Add(self.l, pos = (1, 0), span = (1, 2), flag = wx.EXPAND)
+
+
 class Plater(wx.Frame):
     def __init__(self, **kwargs):
         self.destroy_on_done = True
@@ -289,9 +469,40 @@ class Plater(wx.Frame):
         size = kwargs.get("size", (800, 580))
         if "size" in kwargs:
             del kwargs["size"]
-        wx.Frame.__init__(self, parent, title = _("Plate building tool"), size = size)
+        #style = wx.DEFAULT_FRAME_STYLE & (~wx.CLOSE_BOX) | wx.STAY_ON_TOP
+        style = wx.DEFAULT_FRAME_STYLE & (~wx.CLOSE_BOX) | wx.FRAME_FLOAT_ON_PARENT
+        wx.Frame.__init__(self, parent, title = _("Matplot Chat"), size = size, style=style)
         self.SetIcon(wx.Icon(iconfile("plater.png"), wx.BITMAP_TYPE_PNG))
-        self.prepare_ui(**kwargs)
+        #self.prepare_ui(**kwargs)
+        panel = wx.Panel(self)
+        #if kwargs: # If kwargs is not empty.
+        #  print(kwargs)
+        """
+          {'callback': <bound method PronterWindow.platecb of <printrun.pronterface.PronterWindow object at 0x0000000003720C18>>, 'parent': <printrun.pronterface.PronterWindow object at 0x0000000003720C18>, 'build_dimensions': [200.0, 200.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 'circular_platform': False, 'simarrange_path': '', 
+          'antialias_samples': 0, 'com_port': 'com6', 'com_baudrate': '9600'}
+        """
+        print ('Connect Flow Meter & Pressure sensor Device')
+        self.SerialPort = kwargs.get("com_port", None) 
+        self.SerialBaudrate = kwargs.get("com_baudrate", 9600) 
+        print ('SerialPort: %s , Baudrate: %s' % (self.SerialPort, self.SerialBaudrate))
+        if (self.SerialPort=='None'):
+            print('Random Value of Flow & Pressure for DEMO.')
+        self.panel = plotPanel(panel, self.SerialPort, self.SerialBaudrate)
+        #self.panel = plotPanel(panel, 'Com6')
+
+        """
+        style = wx.DEFAULT_FRAME_STYLE & (~wx.CLOSE_BOX) & (~wx.MAXIMIZE_BOX)
+        super(PlaterPanel, self).__init__(parent = parent, style=style)
+
+        ## wxpython-how-to-hide-the-x-and-expand-button-on-window
+        ## https://stackoverflow.com/questions/25024129/wxpython-how-to-hide-the-x-and-expand-button-on-window
+        style = self.GetWindowStyle()
+        self.SetWindowStyle(style & (~wx.CLOSE_BOX) & (~wx.MAXIMIZE_BOX))
+        self.Refresh()
+        """
+
+    def closewindow(self, event):
+        self.Destroy()
 
 def make_plater(panel_class):
     name = panel_class.__name__.replace("Panel", "")
