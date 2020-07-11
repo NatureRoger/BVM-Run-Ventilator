@@ -85,6 +85,7 @@ piwheels is a Python package repository providing Arm platform wheels (pre-compi
 
    $sudo apt install xubuntu-desktop
 
+   $sudo reboot
 
 10. USING BVM-Run-Ventilator (PRINTRUN)
    power on raspberry pi 4b and login 
