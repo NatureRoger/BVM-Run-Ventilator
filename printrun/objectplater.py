@@ -368,11 +368,11 @@ class plotPanel(wx.Panel):
 
         if 'raspi' in platform_str:  ## raspberry pi slow down the refresh interval
             self.x_width=60
-            v_interval=200
+            v_interval=160
 
         else:
             self.x_width=100
-            v_interval=80
+            v_interval=60
 
 
         self.animator = manim.FuncAnimation(self.fig,self.anim, interval=v_interval)
