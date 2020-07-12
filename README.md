@@ -1,5 +1,5 @@
 # BVM-run 1.0
-  This version of BVM-run needs Python3 and wxPython4.x,matplotlib and pysqlite3.
+  This version of BVM Run Ventilator Software needs Python3 and wxPython4.x,matplotlib and pysqlite3.
   more details require python3 modules please check requirements.txt.
   Add to support DIY Pitot Tube Flow Meter and BMP180(or BMP280) Presure sernsor, which connected with second serial port, you can setup the Serial port via Main Menu
   -> Settings -> BVM Run Options -> BVM Run Ventilator Settings
@@ -447,7 +447,7 @@ List of available commands:
 # LICENSE
 
 ```
-Printrun is free software: you can redistribute it and/or modify
+BVM Run Ventilator Software is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
