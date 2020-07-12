@@ -375,11 +375,13 @@ class plotPanel(wx.Panel):
             self.x_width=100
             v_interval=120
             self.gtime=0.24
+            self.blockFactor=6
 
         else:
             self.x_width=100
             v_interval=45
             self.gtime=0.1
+            self.blockFactor=3
 
         #self.ax1.clear()
         self.ax1.set_xlim([0,self.x_width])
@@ -427,27 +429,28 @@ class plotPanel(wx.Panel):
             #print(arduinoString.decode()[0])
             if(arduinoString[0]==48 and (self.tget==0 or self.tget>self.gtime)): 
               dataArray = arduinoString.decode().strip().split(',')  #Split it into an array called dataArray 
-              if (float( dataArray[4] )>0.2 or float( dataArray[2] )> self.base_P+1) or random.randint(1, 10)>8 :
+              if (float( dataArray[4] )>0.2 or float( dataArray[2] )> self.base_P+1) or random.randint(1, 10)>self.blockFactor :
                 arduinoString_ok=True                                          
                                                            # str→bytes：encode()方法。str通过encode()方法可以转换为bytes。
                                                            #bytes→str：decode()方法。如果我们从网络或磁盘上读取了字节流，那么读到的数据就是bytes。要把bytes变为str，就需要用decode()方法。
                   #line 115, in <module> if ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
                   #UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfe in position 0: invalid start byte
               
-              #self.ax1.clear()
-              #self.ax1.set_xlim([0,self.x_width])
-              #self.ax1.set_ylim([-2,55]) 
-              #self.ax1.set_ylabel('Pressure (cmH2O)') 
-              #self.ax2.clear()          
-              #self.ax2.set_xlim([0,self.x_width])
-              #self.ax2.set_ylim([-2,350])
-              #self.ax2.set_ylabel('Flow (L/Min)')  
+            if "Windows" in platform.platform() and arduinoString_ok==True :
+               self.ax1.clear()
+               self.ax1.set_xlim([0,self.x_width])
+               self.ax1.set_ylim([-2,55]) 
+               self.ax1.set_ylabel('Pressure (cmH2O)') 
+               self.ax2.clear()          
+               self.ax2.set_xlim([0,self.x_width])
+               self.ax2.set_ylim([-2,350])
+               self.ax2.set_ylabel('Flow (L/Min)')  
 
             elif ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
-              print(arduinoString.decode())
-              arduinoString_ok==False
+               print(arduinoString.decode())
+               arduinoString_ok==False
             else:
-              arduinoString_ok==False                  
+               arduinoString_ok==False                  
 
             #print(arduinoString)
             #print ('arduinoString[0] %s' % (arduinoString[0]))
@@ -464,14 +467,15 @@ class plotPanel(wx.Panel):
             dataArray[4] = random.randint(0, 28)        ## SDP810-500PA diff_P 0->400
             arduinoString_ok=True
 
-            #self.ax1.clear()
-            #self.ax1.set_xlim([0,self.x_width])
-            #self.ax1.set_ylim([-2,55]) 
-            #self.ax1.set_ylabel('Pressure (cmH2O)') 
-            #self.ax2.clear()          
-            #self.ax2.set_xlim([0,self.x_width])
-            #self.ax2.set_ylim([-2,350])
-            #self.ax2.set_ylabel('Flow (L/Min)')              
+            if "Windows" in platform.platform():
+              self.ax1.clear()
+              self.ax1.set_xlim([0,self.x_width])
+              self.ax1.set_ylim([-2,55]) 
+              self.ax1.set_ylabel('Pressure (cmH2O)') 
+              self.ax2.clear()          
+              self.ax2.set_xlim([0,self.x_width])
+              self.ax2.set_ylim([-2,350])
+              self.ax2.set_ylabel('Flow (L/Min)')              
 
         if (arduinoString_ok==True):
             Flow_value = 0
@@ -537,24 +541,24 @@ class plotPanel(wx.Panel):
 
         if (self.x_time%self.x_width==0) :
           if len(self.values1)>0:
-            #self.values1.pop(0)
-            #self.values2.pop(0)
-            #self.x_time = self.x_time-1 
 
-            self.values1 = []
-            self.values2 = []
-            self.x_time = 0 
+            if "Windows" in platform.platform():
+                self.values1.pop(0)
+                self.values2.pop(0)
+                self.x_time = self.x_time-1 
+            else:   
+                self.values1 = []
+                self.values2 = []
+                self.x_time = 0 
 
-            self.ax1.clear()
-            self.ax1.set_xlim([0,self.x_width])
-            self.ax1.set_ylim([-2,55]) 
-            self.ax1.set_ylabel('Pressure (cmH2O)') 
-            self.ax2.clear()          
-            self.ax2.set_xlim([0,self.x_width])
-            self.ax2.set_ylim([-2,350])
-            self.ax2.set_ylabel('Flow (L/Min)')  
-                  
-                        
+                self.ax1.clear()
+                self.ax1.set_xlim([0,self.x_width])
+                self.ax1.set_ylim([-2,55]) 
+                self.ax1.set_ylabel('Pressure (cmH2O)') 
+                self.ax2.clear()          
+                self.ax2.set_xlim([0,self.x_width])
+                self.ax2.set_ylim([-2,350])
+                self.ax2.set_ylabel('Flow (L/Min)')         
         return  
   
 
