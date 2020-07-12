@@ -27,6 +27,8 @@ import time
 from numba import jit
 import math
 
+import io
+
 import matplotlib
 matplotlib.use('GTK3Agg') 
 import numpy as np
@@ -329,7 +331,11 @@ class plotPanel(wx.Panel):
     #def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         
+
+        #self.fig, (self.ax1,self.ax2) = plt.subplots(nrows=2)
+
         self.fig = mfigure.Figure()
+        #self.fig = plt.figure(figsize=(16,8))
         #self.ax1 = self.fig.add_subplot(211)
         #self.ax2 = self.fig.add_subplot(311)
         self.ax1 = self.fig.add_axes([0.1, 0.5, 0.8, 0.4],
@@ -343,7 +349,7 @@ class plotPanel(wx.Panel):
         
         self.PORT=strPort
         self.values1 = []
-        self.values2 = []        
+        self.values2 = []             
         self.arduinoString =''
 
         self.base_P_TEST_TIMES=10
@@ -356,7 +362,7 @@ class plotPanel(wx.Panel):
 
         platform_str=platform.platform()
 
-        self.x_time=0
+        self.x_time=0     
         
 
         self.r_density      = 1.204    ## density of fluid (kg/m3)
@@ -367,15 +373,34 @@ class plotPanel(wx.Panel):
                                   ##       4mm ->  0.004m / 2 = 0.002m 
 
         if 'raspi' in platform_str:  ## raspberry pi slow down the refresh interval
-            self.x_width=60
-            v_interval=160
+            self.x_width=100
+            v_interval=90
+            self.gtime=0.165
 
         else:
             self.x_width=100
-            v_interval=60
+            v_interval=45
+            self.gtime=0.09
 
+        #self.ax1.clear()
+        self.ax1.set_xlim([0,self.x_width])
+        self.ax1.set_ylim([-2,55]) 
+        self.ax1.set_xlabel('X time') 
+        #self.ax1.yaxis.set_label_position("right")
+        self.ax1.set_ylabel('Pressure (cmH2O)')  
 
-        self.animator = manim.FuncAnimation(self.fig,self.anim, interval=v_interval)
+        #self.ax2.clear()
+        self.ax2.set_xlim([0,self.x_width])
+        self.ax2.set_ylim([-2,350]) 
+        self.ax2.set_xlabel('X time') 
+
+        #self.ax2.yaxis.set_label_position("right")
+        self.ax2.set_ylabel('Flow (L/Min)')  
+
+        self.tget=0
+        self.t1 = time.time()
+        #self.animator = manim.FuncAnimation(self.fig, self.anim, interval=v_interval, repeat=False) 
+        self.animator = manim.FuncAnimation(self.fig, self.anim, interval=v_interval) 
 
         # Now put all into a sizer
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -384,52 +409,81 @@ class plotPanel(wx.Panel):
         ## Best to allow the toolbar to resize!
         #sizer.Add(self.toolbar, 0, wx.GROW)
         self.SetSizer(sizer)
-        self.Fit()
-
+        self.Fit()        
 
     def anim(self,i):
         arduinoString_ok=False
-        dataArray=[0,0,0,0]
-
-        #t1 = time.time()
+        dataArray=[9,0,0,0,0]
+        
+        if (self.tget==0 or self.tget>self.gtime):
+          self.t1 = time.time()
 
         ### read serial line
         if self.PORT!='None':
             while (self.arduinoData.inWaiting()==0): #Wait here until there is data
                 pass #do nothing
+
             arduinoString = self.arduinoData.readline() #read the line of text from the serial port
+            #print(arduinoString)
+            #print(arduinoString.decode()[0])
+            if(arduinoString[0]==48 and (self.tget==0 or self.tget>self.gtime)): 
+              dataArray = arduinoString.decode().strip().split(',')  #Split it into an array called dataArray 
+              arduinoString_ok=True                                          
+                                                           # str→bytes：encode()方法。str通过encode()方法可以转换为bytes。
+                                                           #bytes→str：decode()方法。如果我们从网络或磁盘上读取了字节流，那么读到的数据就是bytes。要把bytes变为str，就需要用decode()方法。
+                  #line 115, in <module> if ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
+                  #UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfe in position 0: invalid start byte
+              
+              #self.ax1.clear()
+              #self.ax1.set_xlim([0,self.x_width])
+              #self.ax1.set_ylim([-2,55]) 
+              #self.ax1.set_ylabel('Pressure (cmH2O)') 
+              #self.ax2.clear()          
+              #self.ax2.set_xlim([0,self.x_width])
+              #self.ax2.set_ylim([-2,350])
+              #self.ax2.set_ylabel('Flow (L/Min)')  
+
+            elif ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
+              print(arduinoString.decode())
+              arduinoString_ok==False
+            else:
+              arduinoString_ok==False                  
+
             #print(arduinoString)
             #print ('arduinoString[0] %s' % (arduinoString[0]))
             #if(arduinoString[0]!=0xfe and arduinoString[0]!=0xb7):
-            if(arduinoString[0]<128):
-              if ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
-                print(arduinoString.decode())
-                arduinoString_ok==False
-              elif(',' in arduinoString.decode()): 
-                arduinoString_ok=True 
-                dataArray = arduinoString.decode().strip().split(',')   #Split it into an array called dataArray
-                                                       # str→bytes：encode()方法。str通过encode()方法可以转换为bytes。
-                                                       #bytes→str：decode()方法。如果我们从网络或磁盘上读取了字节流，那么读到的数据就是bytes。要把bytes变为str，就需要用decode()方法。
-                #line 115, in <module> if ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
-                #UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfe in position 0: invalid start byte
+            ###if ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
+                ###print(arduinoString.decode())
+                ###arduinoString_ok==False
         else:
-            dataArray[0] = random.randint(27, 32)
-            dataArray[1] = random.randint(1007, 1042)
-            dataArray[2] = random.randint(27, 32)
-            dataArray[3] = random.randint(0, 28)  ## diff_P 0->400
+
+            dataArray[0] = '*'
+            dataArray[1] = random.randint(27, 32)       ## bmp180 temp
+            dataArray[2] = random.randint(1007, 1042)   ## bmp180 Pressure (hPa)
+            dataArray[3] = random.randint(27, 32)       ## SDP810-500PA SDP_temp
+            dataArray[4] = random.randint(0, 28)        ## SDP810-500PA diff_P 0->400
             arduinoString_ok=True
+
+            #self.ax1.clear()
+            #self.ax1.set_xlim([0,self.x_width])
+            #self.ax1.set_ylim([-2,55]) 
+            #self.ax1.set_ylabel('Pressure (cmH2O)') 
+            #self.ax2.clear()          
+            #self.ax2.set_xlim([0,self.x_width])
+            #self.ax2.set_ylim([-2,350])
+            #self.ax2.set_ylabel('Flow (L/Min)')              
 
         if (arduinoString_ok==True):
             Flow_value = 0
 
             #T(°C) = (T(°F) - 32) / 1.8
             #temp = (float( dataArray[0] ) - 32 ) /1.8 #Convert first element to floating number and put in temp C
-            temp = float( dataArray[0] )               # Get (°C) 
-            P =    round(calc_P(float( dataArray[1])),3)    #Convert second element to floating number and put in P  cmH2O
+            temp = float( dataArray[1] )               # Get (°C) 
+            P =    round(calc_P(float( dataArray[2])),3)    #Convert second element to floating number and put in P  cmH2O
                                                        #Hectopascals to centimeters of water conversion formula
                                                        #Pressure(cmH2O) = Pressure (hPa) × 1.0197442889221
-            SDP_temp= float( dataArray[2] )            # Get SDP810-500PA TEMPRATURE (°C) 
-            diff_P =  float( dataArray[3] ) 
+            SDP_temp= float( dataArray[3] )            # Get SDP810-500PA TEMPRATURE (°C) 
+            diff_P =  float( dataArray[4] ) 
 
             if diff_P<=0 :
                Velocity = 0
@@ -467,31 +521,35 @@ class plotPanel(wx.Panel):
               self.values2.append(Flow_value)
               ##print(self.values1)
               ##print(self.values2)
-        
-              self.ax1.clear()
-              self.ax1.set_xlim([0,self.x_width])
-              self.ax1.set_ylim([-2,55]) 
-              self.ax1.set_xlabel('X time') 
-
-              self.ax1.set_ylabel('Pressure (cmH2O)')   
-              self.ax2.clear()
-              self.ax2.set_xlim([0,self.x_width])
-              self.ax2.set_ylim([-2,350]) 
-              self.ax2.set_xlabel('X time') 
-              self.ax2.set_ylabel('Flow (L/Min)')                       
+    
               self.ax1.plot(np.arange(1,self.x_time+1),self.values1,'.-b') ## 'b^-'  'd-'
               self.ax2.plot(np.arange(1,self.x_time+1),self.values2,'.-g') ## 'ro-'
 
-
-        #t2 = time.time()
-        #t = t2 - t1
-        #print("%.20f" % t)
+        t2 = time.time()
+        t = t2 - self.t1
+        self.tget= t2 - self.t1
+        #print("t %.20f" % t)
+        #print("tget %.20f" % self.tget)
 
         if (self.x_time%self.x_width==0) :
           if len(self.values1)>0:
-            self.values1.pop(0)
-            self.values2.pop(0)
-            self.x_time = self.x_time-1       
+            #self.values1.pop(0)
+            #self.values2.pop(0)
+            #self.x_time = self.x_time-1 
+
+            self.values1 = []
+            self.values2 = []
+            self.x_time = 0 
+
+            self.ax1.clear()
+            self.ax1.set_xlim([0,self.x_width])
+            self.ax1.set_ylim([-2,55]) 
+            self.ax1.set_ylabel('Pressure (cmH2O)') 
+            self.ax2.clear()          
+            self.ax2.set_xlim([0,self.x_width])
+            self.ax2.set_ylim([-2,350])
+            self.ax2.set_ylabel('Flow (L/Min)')  
+                  
                         
         return  
   
