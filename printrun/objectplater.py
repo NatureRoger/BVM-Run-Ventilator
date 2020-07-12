@@ -1,6 +1,7 @@
-# This file is part of the Printrun suite.
+# This file is part of the BVM-run Ventilator suite, it's based on 
+# Printrun.
 #
-# Printrun is free software: you can redistribute it and/or modify
+# BVM-run and Printrun is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
@@ -22,6 +23,12 @@ import platform
 import types
 import wx
 
+import time
+from numba import jit
+import math
+
+import matplotlib
+matplotlib.use('GTK3Agg') 
 import numpy as np
 import matplotlib.figure as mfigure
 import matplotlib.animation as manim
@@ -302,6 +309,20 @@ class PlaterPanel1(wx.Panel):
         super(PlaterPanel, self).__init__(parent = parent, style=style)
         #self.prepare_ui(**kwargs)
 
+
+@jit(nopython=True)  # Set "nopython" mode for best performance, equivalent to @njit
+def calc_P(p_value): # Function is compiled to machine code when called the first time
+    return p_value * 1.0197442889221 
+
+@jit(nopython=True) # Set "nopython" mode for best performance, equivalent to @njit
+def calc_Velocity(diff_P, r_density): 
+    return math.sqrt( 2 *  diff_P / r_density  )
+
+@jit(nopython=True) # Set "nopython" mode for best performance, equivalent to @njit
+def calc_Flow_value(Radius,radius_tube, Velocity):
+    return 3.141592653589793 * (Radius**2- radius_tube**2) *  Velocity * 1000 * 60
+
+
 class plotPanel(wx.Panel):
     def __init__(self, parent, strPort, Baudrate, id=-1, dpi=None, **kwargs):
     #    super().__init__(parent, id=id, **kwargs)    
@@ -312,9 +333,9 @@ class plotPanel(wx.Panel):
         #self.ax1 = self.fig.add_subplot(211)
         #self.ax2 = self.fig.add_subplot(311)
         self.ax1 = self.fig.add_axes([0.1, 0.5, 0.8, 0.4],
-                   xticklabels=[], ylim=(-2, 50))
+                   xticklabels=[], ylim=(-2, 55))
         self.ax2 = self.fig.add_axes([0.1, 0.1, 0.8, 0.4],
-                   ylim=(-2, 300))       
+                   ylim=(-2, 350))       
         self.canv = FigureCanvasWxAgg(self, wx.ID_ANY, self.fig)
 
         if strPort!='None':
@@ -333,8 +354,10 @@ class plotPanel(wx.Panel):
         self.Total_temp=0
         self.base_temp=0
 
+        platform_str=platform.platform()
+
         self.x_time=0
-        self.x_width=100
+        
 
         self.r_density      = 1.204    ## density of fluid (kg/m3)
         self.pi             = 3.141592653589793
@@ -343,11 +366,14 @@ class plotPanel(wx.Panel):
         self.radius_tube    = 0.002    ## "radius_tube" : diameter of the Pitot Tube
                                   ##       4mm ->  0.004m / 2 = 0.002m 
 
-        platform_str=platform.platform()
         if 'raspi' in platform_str:  ## raspberry pi slow down the refresh interval
+            self.x_width=60
             v_interval=300
+
         else:
+            self.x_width=100
             v_interval=100
+
 
         self.animator = manim.FuncAnimation(self.fig,self.anim, interval=v_interval)
 
@@ -360,9 +386,12 @@ class plotPanel(wx.Panel):
         self.SetSizer(sizer)
         self.Fit()
 
+
     def anim(self,i):
         arduinoString_ok=False
         dataArray=[0,0,0,0]
+
+        #t1 = time.time()
 
         ### read serial line
         if self.PORT!='None':
@@ -396,7 +425,7 @@ class plotPanel(wx.Panel):
             #T(°C) = (T(°F) - 32) / 1.8
             #temp = (float( dataArray[0] ) - 32 ) /1.8 #Convert first element to floating number and put in temp C
             temp = float( dataArray[0] )               # Get (°C) 
-            P =    round((float( dataArray[1] ) * 1.0197442889221),3)    #Convert second element to floating number and put in P  cmH2O
+            P =    round(calc_P(float( dataArray[1])),3)    #Convert second element to floating number and put in P  cmH2O
                                                        #Hectopascals to centimeters of water conversion formula
                                                        #Pressure(cmH2O) = Pressure (hPa) × 1.0197442889221
             SDP_temp= float( dataArray[2] )            # Get SDP810-500PA TEMPRATURE (°C) 
@@ -406,10 +435,12 @@ class plotPanel(wx.Panel):
                Velocity = 0
                Flow_value = 0
             else:
-              Velocity   = np.sqrt( 2 *  diff_P / self.r_density  ) 
-              Flow_value = round(self.pi * (self.Radius*self.Radius-self.radius_tube*self.radius_tube) *  Velocity * 1000, 3)
-              Flow_value = Flow_value * 60
-            #print ("; BMP180 TempC, cmH2O ; DP810-500PA TempC, Pitot Tube Diff Pressrue : %s, %s, %s, %s, %s" % (temp, P,SDP_temp, diff_P, Flow_value))
+              #Velocity   = np.sqrt( 2 *  diff_P / self.r_density  ) 
+              Velocity   = calc_Velocity(diff_P, self.r_density )
+              #Flow_value = round(self.pi * (self.Radius*self.Radius-self.radius_tube*self.radius_tube) *  Velocity * 1000, 3)
+              #Flow_value = Flow_value * 60
+              Flow_value = calc_Flow_value(self.Radius,self.radius_tube, Velocity)
+            #print ("; BMP180 TempC, cmH2O ; DP810-50radius_tube0PA TempC, Pitot Tube Diff Pressrue : %s, %s, %s, %s, %s" % (temp, P,SDP_temp, diff_P, Flow_value))
             
             if i < self.base_P_TEST_TIMES and P>0:
               self.Total_P = self.Total_P + P
@@ -439,17 +470,22 @@ class plotPanel(wx.Panel):
         
               self.ax1.clear()
               self.ax1.set_xlim([0,self.x_width])
-              self.ax1.set_ylim([-2,50]) 
+              self.ax1.set_ylim([-2,55]) 
               self.ax1.set_xlabel('X time') 
 
               self.ax1.set_ylabel('Pressure (cmH2O)')   
               self.ax2.clear()
               self.ax2.set_xlim([0,self.x_width])
-              self.ax2.set_ylim([-2,300]) 
+              self.ax2.set_ylim([-2,350]) 
               self.ax2.set_xlabel('X time') 
               self.ax2.set_ylabel('Flow (L/Min)')                       
               self.ax1.plot(np.arange(1,self.x_time+1),self.values1,'.-b') ## 'b^-'  'd-'
               self.ax2.plot(np.arange(1,self.x_time+1),self.values2,'.-g') ## 'ro-'
+
+
+        #t2 = time.time()
+        #t = t2 - t1
+        #print("%.20f" % t)
 
         if (self.x_time%self.x_width==0) :
           if len(self.values1)>0:

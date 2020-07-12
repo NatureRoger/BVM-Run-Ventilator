@@ -2,7 +2,7 @@
 Raspberry Pi 4b installation process for BVM-Run-Ventilator
  1.  Download 64-bit Ubuntu 20.04 LTS 
      https://ubuntu.com/download/raspberry-pi
- 2.  Flash Ubuntu onto your microSD card 
+ 2.  Flash Ubuntu onto your microSD card (need 64GB SD card , 2GB swap file)
     The first thing you need to do is take a minute to copy the Ubuntu image on to a microSD card by following our tutorials, we have one for 
     Ubuntu machines,
     https://ubuntu.com/tutorials/create-an-ubuntu-image-for-a-raspberry-pi-on-ubuntu#1-overview
@@ -19,12 +19,12 @@ Raspberry Pi 4b installation process for BVM-Run-Ventilator
         write "ubuntu-20.04-preinstalled-server-arm64+raspi.img" to SD Card
 
  3. Boot Ubuntu Server 
-	You need to attach a monitor and keyboard to the board. You can alternatively use a serial cable.
-	Now insert the microSD card
-	Plug the power adaptor into the board
-	Login to your Pi 
-	When prompted to log in, use “ubuntu” for the username and the password. You will be asked to change this default password after you log in.
-	You are now running the Ubuntu Server on your Raspberry Pi.
+    You need to attach a monitor and keyboard to the board. You can alternatively use a serial cable.
+    Now insert the microSD card
+    Plug the power adaptor into the board
+    Login to your Pi 
+    When prompted to log in, use “ubuntu” for the username and the password. You will be asked to change this default password after you log in.
+    You are now running the Ubuntu Server on your Raspberry Pi.
 
  4. ubuntu login  account: ubuntu  password: ubuntu  (then change your password)
 
@@ -36,11 +36,11 @@ Raspberry Pi 4b installation process for BVM-Run-Ventilator
  6. check python version
     $python3
     Python 3.8.2 (default, Mar 13 2020, 10:14:16)
-	[GCC 9.2.1 20200306] on linux
-	Type "help", "copyright", "credits" or "license" for more information.
-	>>>
-	type >>>exit(0)     ##stop python3
-	
+    [GCC 9.2.1 20200306] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>>
+    type >>>exit(0)     ##stop python3
+    
 
  7. Install Git on Ubuntu
     $sudo apt install git
@@ -54,16 +54,19 @@ piwheels is a Python package repository providing Arm platform wheels (pre-compi
     [global]
     extra-index-url=https://www.piwheels.org/simple
 
- 8. Install BVM-Run-Ventilator and require python3 modules
+ 9. Install BVM-Run-Ventilator and require python3 modules
+
     $ pwd
-	/home/ubuntu
+    /home/ubuntu
     $git clone https://github.com/NatureRoger/BVM-Run-Ventilator.git  #clone the repository
     $cd BVM-Run-Ventilator  # change to BVM-Run-Ventilator directory
+
+  9-0 
     $sudo apt-get install python3-venv   #install virtual environment tools for python3
     $python3 -m venv venv   # create an virtual environment for python3
     $. venv/bin/activate  # activate the virtual environment (notice the space after the dot)
 
- 	$sudo apt-get update
+    $sudo apt-get update
     $ sudo apt-get install dpkg-dev build-essential libjpeg-dev libtiff-dev libsdl1.2-dev  libnotify-dev freeglut3 freeglut3-dev libghc-gtk3-dev libwxgtk3.0-gtk3-dev
 
     $sudo apt-get install build-essential tk-dev libncurses5-dev libncursesw5-dev libreadline6-dev libdb5.3-dev libgdbm-dev libsqlite3-dev libssl-dev libbz2-dev libexpat1-dev liblzma-dev zlib1g-dev
@@ -75,22 +78,101 @@ piwheels is a Python package repository providing Arm platform wheels (pre-compi
     $sudo apt-get install libxml2-dev libxslt-dev python-dev
     $pip3 install lxml
     $sudo apt-get install libgtk-3-dev
-    $python3 -m pip install -r requirements.txt
 
-9. Install a Desktop environment
+
+  9-1 Install numba require python3 modules
+    ## Numba decorated function it is compiled to machine code “just-in-time” for execution 
+    ## and all or part of your code can subsequently run at native machine code speed
+    ## (very faster then python np.numpy or math)! Numba needs llvm 
+    ## http://numba.pydata.org/numba-doc/latest/user/5minguide.html
+
+    ##Building llvm for a Raspberry Pi 3 and up required a few modifications to the base system:
+    ##1.) 64GB SD card - else the build runs out of disk space (see note further down)
+    ##2.) 2GB swap file - else the linker runs out of memory
+    ## https://github.com/librosa/librosa/issues/757
+
+
+    # LLVM
+    $ sudo apt-get install libllvm-9-ocaml-dev libllvm9 llvm-9 llvm-9-dev llvm-9-doc llvm-9-examples llvm-9-runtime
+
+    # Clang and co
+    $ sudo apt-get install clang-9 clang-tools-9 clang-9-doc libclang-common-9-dev libclang-9-dev libclang1-9 clang-format-9 python-clang-9 clangd-9
+    
+    # libfuzzer
+    $ sudo apt-get install libfuzzer-9-dev
+    
+    # lldb
+    $ sudo apt-get install lldb-9
+
+    # lld (linker)
+    $ sudo apt-get install lld-9
+
+    # libc++
+    $ sudo apt-get install libc++-9-dev libc++abi-9-dev
+
+    # OpenMP
+    $ sudo apt-get install libomp-9-dev
+
+    $ ls -ls /usr/bin/llvm-config*
+    $ alias llvm-config="llvm-config-9" 
+    $ export LLVM_CONFIG="/usr/bin/llvm-config-9"
+
+    $ easy_install librosa
+
+    llvmlite versions   compatible LLVM versions
+    0.33                9
+    0.29.0 - …          7.0.x, 7.1.x, 8.0.x
+    0.27.0 - 0.28.0     7.0.x
+    0.23.0 - 0.26.0     6.0.x
+    
+    $ pip3 install llvmlite
+
+    $ pip3 install numba
+
+  9-2 Install all other require modules
+    $ python3 -m pip install -r requirements.txt
+
+
+10. Install a Desktop environment
    You have the possibility to install a desktop environment. You can choose between Xubuntu, Lubuntu and Kubuntu, i.e. Xfce, LXQt and KDE.
-	sudo apt install xubuntu-desktop
-	sudo apt install lubuntu-desktop
-	sudo apt install kubuntu-desktop
+    sudo apt install xubuntu-desktop
+    sudo apt install lubuntu-desktop
+    sudo apt install kubuntu-desktop
 
    $sudo apt install xubuntu-desktop
 
    $sudo reboot
 
-10. USING BVM-Run-Ventilator (PRINTRUN)
+11. USING BVM-Run-Ventilator (PRINTRUN)
    power on raspberry pi 4b and login 
    $pwd
    /home/ubuntu
    $cd BVM-Run-Ventilator
    $. venv/bin/activate  # activate the virtual environment (notice the space after the dot)
    $python3 pronterface.py
+
+
+........................................................
+
+Linux/RaspBerry
+$python3 serial_port_list.py
+
+    example list
+    /dev/ttyACM0: ttyACM0 [USB VID:PID=2341:0042 SER=5573631333735151F001 LOCATION=1-1.2:1.0]
+    /dev/ttyAMA0: ttyAMA0 [fe201000.serial]
+    /dev/ttyUSB0: USB Serial [USB VID:PID=1A86:7523 LOCATION=1-1.1]
+
+    ==> /dev/ttyACM0  [connect to Adruino Mega RAMP1.4 for BVM-run Ventilator]
+    ==> /dev/ttyUSB0  [connect to Adruino Nano Air Flow Meter & Pressure Sensor]
+
+
+Windows
+>python serial_port_list.py
+
+    example list
+    COM5: USB 序列裝置 (COM5) [USB VID:PID=2341:0042 SER=5573631333735151F001 LOCATION=1-3]
+    COM6: USB-SERIAL CH340 (COM6) [USB VID:PID=1A86:7523 SER=5 LOCATION=1-2]
+
+    ==> COM5  [connect to Adruino Mega RAMP1.4 for BVM-run Ventilator]
+    ==> COM6  [...CH340... connect to Adruino Nano Air Flow Meter & Pressure Sensor]
+
