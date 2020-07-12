@@ -27,8 +27,6 @@ import time
 from numba import jit
 import math
 
-import io
-
 import matplotlib
 matplotlib.use('GTK3Agg') 
 import numpy as np
@@ -346,13 +344,14 @@ class plotPanel(wx.Panel):
 
         if strPort!='None':
             self.arduinoData = serial.Serial(strPort, Baudrate) #Creating our serial object named arduinoData
-        
+            time.sleep(1)
+
         self.PORT=strPort
         self.values1 = []
         self.values2 = []             
         self.arduinoString =''
 
-        self.base_P_TEST_TIMES=10
+        self.base_P_TEST_TIMES=16
         self.cnt=0
         self.Total_P=0
         self.base_P=0
@@ -374,13 +373,13 @@ class plotPanel(wx.Panel):
 
         if 'raspi' in platform_str:  ## raspberry pi slow down the refresh interval
             self.x_width=100
-            v_interval=90
-            self.gtime=0.165
+            v_interval=120
+            self.gtime=0.24
 
         else:
             self.x_width=100
             v_interval=45
-            self.gtime=0.09
+            self.gtime=0.1
 
         #self.ax1.clear()
         self.ax1.set_xlim([0,self.x_width])
@@ -428,7 +427,8 @@ class plotPanel(wx.Panel):
             #print(arduinoString.decode()[0])
             if(arduinoString[0]==48 and (self.tget==0 or self.tget>self.gtime)): 
               dataArray = arduinoString.decode().strip().split(',')  #Split it into an array called dataArray 
-              arduinoString_ok=True                                          
+              if (float( dataArray[4] )>0.2 or float( dataArray[2] )> self.base_P+1) or random.randint(1, 10)>8 :
+                arduinoString_ok=True                                          
                                                            # str→bytes：encode()方法。str通过encode()方法可以转换为bytes。
                                                            #bytes→str：decode()方法。如果我们从网络或磁盘上读取了字节流，那么读到的数据就是bytes。要把bytes变为str，就需要用decode()方法。
                   #line 115, in <module> if ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
@@ -494,7 +494,7 @@ class plotPanel(wx.Panel):
               #Flow_value = round(self.pi * (self.Radius*self.Radius-self.radius_tube*self.radius_tube) *  Velocity * 1000, 3)
               #Flow_value = Flow_value * 60
               Flow_value = calc_Flow_value(self.Radius,self.radius_tube, Velocity)
-            #print ("; BMP180 TempC, cmH2O ; DP810-50radius_tube0PA TempC, Pitot Tube Diff Pressrue : %s, %s, %s, %s, %s" % (temp, P,SDP_temp, diff_P, Flow_value))
+              #print ("; BMP180 TempC, cmH2O ; DP810-50radius_tube0PA TempC, Pitot Tube Diff Pressrue : %s, %s, %s, %s, %s" % (temp, P,SDP_temp, diff_P, Flow_value))
             
             if i < self.base_P_TEST_TIMES and P>0:
               self.Total_P = self.Total_P + P
@@ -515,15 +515,19 @@ class plotPanel(wx.Panel):
               self.x_time=0
             else:  
               self.x_time=self.x_time+1 
-
+              
+              if self.base_P==0:
+                self.base_P =  P
               self.Delta_P= round(P - self.base_P, 3)
               self.values1.append(self.Delta_P) 
               self.values2.append(Flow_value)
+              #print ('base_P = %s , Delta_P = %s' % (self.base_P, self.Delta_P))
               ##print(self.values1)
               ##print(self.values2)
-    
-              self.ax1.plot(np.arange(1,self.x_time+1),self.values1,'.-b') ## 'b^-'  'd-'
+
               self.ax2.plot(np.arange(1,self.x_time+1),self.values2,'.-g') ## 'ro-'
+              self.ax1.plot(np.arange(1,self.x_time+1),self.values1,'.-b') ## 'b^-'  'd-'
+     
 
         t2 = time.time()
         t = t2 - self.t1
