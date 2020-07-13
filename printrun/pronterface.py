@@ -1431,7 +1431,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         elif self.loading_gcode:
             status_string = self.loading_gcode_message
         wx.CallAfter(self.statusbar.SetStatusText, status_string)
-        wx.CallAfter(self.gviz.Refresh)
+        #wx.CallAfter(self.gviz.Refresh)
         # Call pronsole's statuschecker inner loop function to handle
         # temperature monitoring and status loop sleep
         pronsole.pronsole.statuschecker_inner(self, self.settings.monitor)
@@ -2318,7 +2318,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         dlg = None
         if filename is None:
             dlg = wx.FileDialog(self, _("Open file to print"), basedir, style = wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
-            dlg.SetWildcard(_("OBJ, STL, and GCODE files (*.gcode;*.gco;*.g;*.stl;*.STL;*.obj;*.OBJ)|*.gcode;*.gco;*.g;*.stl;*.STL;*.obj;*.OBJ|GCODE files (*.gcode;*.gco;*.g)|*.gcode;*.gco;*.g|OBJ, STL files (*.stl;*.STL;*.obj;*.OBJ)|*.stl;*.STL;*.obj;*.OBJ|All Files (*.*)|*.*"))
+            dlg.SetWildcard(_("OBJ, STL, and GCODE files (*.GCO;*.gcode;*.gco;*.g;*.stl;*.STL;*.obj;*.OBJ)|*.gcode;*.GCO;*.gco;*.g;*.stl;*.STL;*.obj;*.OBJ|GCODE files (*.GCO;*.gcode;*.gco;*.g)|*.gcode;*.GCO;*.gco;*.g|OBJ, STL files (*.stl;*.STL;*.obj;*.OBJ)|*.stl;*.STL;*.obj;*.OBJ|All Files (*.*)|*.*"))
             try:
               dlg.SetFilterIndex(self.settings.last_file_filter)
             except:
