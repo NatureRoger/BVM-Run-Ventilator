@@ -136,6 +136,11 @@ To use pronterface, you need:
   * dbus (to inhibit sleep on some Linux systems) 
   
   * pysqlite3 (BVM-run Ventilator Need to add pysqlite3 module. <pip3 install pysqlite3>)
+  * matplotlib
+  * numba
+
+  more details please check the requirement file :
+  https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/requirements.txt
 
 ### Use Python virtual environment
 
@@ -156,6 +161,21 @@ $ . venv/bin/activate  # activate the virtual environment (notice the space afte
 (venv) $ python -m pip install -r requirements.txt  # intall the rest of dependencies
 (venv) $ python pronterface.py  # run Pronterface (BVM-Run-Ventilator)
 ```
+### Raspberry Pi 4b installation
+Raspberry Pi 4b installation process for BVM-Run-Ventilator
+https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/RaspBerryPi4b-install_python3_modules_process.txt#L17
+
+USING BVM-Run-Ventilator on raspberry pi (4b)
+   power on raspberry pi 4b and login 
+   $pwd
+     /home/ubuntu
+   $cd BVM-Run-Ventilator
+   $. venv/bin/activate     # activate the virtual environment (notice the space after the dot)
+   $python3 pronterface.py  # Execute BVM-Run-Ventilator system
+
+
+   ** you can run serial_port_list.py to list all the USB Serial ports when after plug-in BVM-Run-Ventilator Arduino Mega and the Flow Meter(Arduino nano) USB serial port cable.
+   $python3 serial_port_list.py  #to list all the USB Serial ports
 
 ### Cython-based G-Code parser
 
