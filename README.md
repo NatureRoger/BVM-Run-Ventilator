@@ -95,6 +95,10 @@ https://paper.dropbox.com/doc/--A0Q_d~d4s7mIbPAndNXi7oz2Ag-XY6pra058VnWddddHXFz7
 
 ![Screen Shot -4](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/LoadFile.png)
 
+![Screen Shot -5](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/FlowMeterMatPlotChart_Demo.png)
+
+![Screen Shot -6](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/FlowMeterMatPlotChart_COM6.png)
+
 # PRINTRUN 2.X
 
 The master branch holds the development of Printrun 2.x. This new version of Printrun supports Python 3 and wxPython 4. All new features and developments should be merged to it.
