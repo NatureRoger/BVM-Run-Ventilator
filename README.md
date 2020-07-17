@@ -3,11 +3,19 @@
   more details require python3 modules please check requirements.txt.
   Add to support DIY Pitot Tube Flow Meter and BMP180(or BMP280) Presure sernsor, which connected with second serial port, you can setup the Serial port via Main Menu
   -> Settings -> BVM Run Options -> BVM Run Ventilator Settings
+
   BVM-run 0.2
     Add to support NEMA23 57 Stepper motor, you can chioce "NEMA17 42 Stepper" or "NEMA23 57 Stepper" from Menu-> Settings -> BVM Run Options
   BVM-run 0.1 first release
-[![Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/images/youtube_image001.jpg)](https://www.youtube.com/watch?v=xGEwENa0d8M)
-    
+[![Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/NB-FlowmeterTestVideo.png)](https://youtu.be/ynCz4BEssY4)
+    Testing Vedio with NEMA23 57stepper motor with NB PC
+    ( + Flow Meter , Pressure sensor , artificial lung)
+    click the image above 
+    to see the Video
+
+[![Watch the video](https://github.com/NatureRoger/BVM-Run-Ventilator/blob/master/screenshots/raspberryPi4bTestVideo.png)](https://youtu.be/gpEDk1NhpYo)
+    Testing Vedio with RaspBerry Pi 4b 
+    ( + Flow Meter , Pressure sensor , artificial lung) 
     click the image above 
     to see the Video
 
