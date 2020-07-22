@@ -370,17 +370,18 @@ class plotPanel(wx.Panel):
                              ##            12mm ->  0.012m / 2 = 0.006m   
         self.radius_tube    = 0.002    ## "radius_tube" : diameter of the Pitot Tube
                                   ##       4mm ->  0.004m / 2 = 0.002m 
-
         if 'raspi' in platform_str:  ## raspberry pi slow down the refresh interval
             self.x_width=100
             v_interval=120
-            self.gtime=0.24
+            self.recv_time=0.1
+            self.plot_time=0.24
             self.blockFactor=6
 
         else:
             self.x_width=100
             v_interval=45
-            self.gtime=0.1
+            self.recv_time=0.1
+            self.plot_time=0.1
             self.blockFactor=3
 
         #self.ax1.clear()
@@ -414,9 +415,18 @@ class plotPanel(wx.Panel):
 
     def anim(self,i):
         arduinoString_ok=False
-        dataArray=[9,0,0,0,0]
+        dataArray=[9,0,0,0,0]    
+
+        """  
+        if self.background_flg==0 and i> 3:
+           self.background = self.fig.canvas.copy_from_bbox(self.ax1.bbox)
+           #background=  [self.fig.canvas.copy_from_bbox(ax1.bbox) for ax in self.ax1]
+           self.background_flg = 1 
+           self.fig.canvas.restore_region(self.background)
+           self.fig.canvas.draw() 
+        """           
         
-        if (self.tget==0 or self.tget>self.gtime):
+        if (self.tget==0 or self.tget>self.plot_time):
           self.t1 = time.time()
 
         ### read serial line
@@ -427,16 +437,21 @@ class plotPanel(wx.Panel):
             arduinoString = self.arduinoData.readline() #read the line of text from the serial port
             #print(arduinoString)
             #print(arduinoString.decode()[0])
-            if(arduinoString[0]==48 and (self.tget==0 or self.tget>self.gtime)): 
+            if(arduinoString[0]==48 and (self.tget==0 or self.tget>self.recv_time)): 
               dataArray = arduinoString.decode().strip().split(',')  #Split it into an array called dataArray 
               if (float( dataArray[4] )>0.2 or float( dataArray[2] )> self.base_P+1) or random.randint(1, 10)>self.blockFactor :
                 arduinoString_ok=True                                          
-                                                           # str→bytes：encode()方法。str通过encode()方法可以转换为bytes。
-                                                           #bytes→str：decode()方法。如果我们从网络或磁盘上读取了字节流，那么读到的数据就是bytes。要把bytes变为str，就需要用decode()方法。
+                                                           # str→bytes：encode() 。str encode() to bytes。
+                                                           # bytes→str：decode() 。 bytes-> str use decode()。
                   #line 115, in <module> if ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
                   #UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfe in position 0: invalid start byte
               
             if "Windows" in platform.platform() and arduinoString_ok==True :
+               """                  
+               if i> 3:
+                   self.fig.canvas.restore_region(self.background)
+                   self.fig.canvas.draw() 
+               """
                self.ax1.clear()
                self.ax1.set_xlim([0,self.x_width])
                self.ax1.set_ylim([-2,55]) 
@@ -444,7 +459,8 @@ class plotPanel(wx.Panel):
                self.ax2.clear()          
                self.ax2.set_xlim([0,self.x_width])
                self.ax2.set_ylim([-2,350])
-               self.ax2.set_ylabel('Flow (L/Min)')  
+               self.ax2.set_ylabel('Flow (L/Min)')
+
 
             elif ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
                print(arduinoString.decode())
@@ -468,14 +484,20 @@ class plotPanel(wx.Panel):
             arduinoString_ok=True
 
             if "Windows" in platform.platform():
-              self.ax1.clear()
-              self.ax1.set_xlim([0,self.x_width])
-              self.ax1.set_ylim([-2,55]) 
-              self.ax1.set_ylabel('Pressure (cmH2O)') 
-              self.ax2.clear()          
-              self.ax2.set_xlim([0,self.x_width])
-              self.ax2.set_ylim([-2,350])
-              self.ax2.set_ylabel('Flow (L/Min)')              
+               """                  
+               if i> 3:
+                   self.fig.canvas.restore_region(self.background)
+                   self.fig.canvas.draw() 
+               """
+               self.ax1.clear()
+               self.ax1.set_xlim([0,self.x_width])
+               self.ax1.set_ylim([-2,55]) 
+               self.ax1.set_ylabel('Pressure (cmH2O)') 
+               self.ax2.clear()          
+               self.ax2.set_xlim([0,self.x_width])
+               self.ax2.set_ylim([-2,350])
+               self.ax2.set_ylabel('Flow (L/Min)')
+        
 
         if (arduinoString_ok==True):
             Flow_value = 0
@@ -500,6 +522,8 @@ class plotPanel(wx.Panel):
               Flow_value = calc_Flow_value(self.Radius,self.radius_tube, Velocity)
               #print ("; BMP180 TempC, cmH2O ; DP810-50radius_tube0PA TempC, Pitot Tube Diff Pressrue : %s, %s, %s, %s, %s" % (temp, P,SDP_temp, diff_P, Flow_value))
             
+            t3 = time.time()
+
             if i < self.base_P_TEST_TIMES and P>0:
               self.Total_P = self.Total_P + P
               self.Total_temp = self.Total_temp + temp
@@ -523,20 +547,27 @@ class plotPanel(wx.Panel):
               if self.base_P==0:
                 self.base_P =  P
               self.Delta_P= round(P - self.base_P, 3)
-              self.values1.append(self.Delta_P) 
-              self.values2.append(Flow_value)
-              #print ('base_P = %s , Delta_P = %s' % (self.base_P, self.Delta_P))
-              ##print(self.values1)
-              ##print(self.values2)
 
-              self.ax2.plot(np.arange(1,self.x_time+1),self.values2,'.-g') ## 'ro-'
-              self.ax1.plot(np.arange(1,self.x_time+1),self.values1,'.-b') ## 'b^-'  'd-'
+              ##self.recv_time=0.1
+              ##self.plot_time=0.24
+
+              if (self.tget> self.plot_time) :
+                  self.values1.append(self.Delta_P) 
+                  self.values2.append(Flow_value)
+                  #print ('base_P = %s , Delta_P = %s' % (self.base_P, self.Delta_P))
+                  ##print(self.values1)
+                  ##print(self.values2)
+
+                  self.ax2.plot(np.arange(1,self.x_time+1),self.values2,'.-g') ## 'ro-'
+                  self.ax1.plot(np.arange(1,self.x_time+1),self.values1,'.-b') ## 'b^-'  'd-'
      
 
         t2 = time.time()
         t = t2 - self.t1
-        self.tget= t2 - self.t1
-        #print("t %.20f" % t)
+        t3r = t2 - t3
+        self.tget= t
+        print("t %.20f , t3r %.20f" % (t, t3r))
+        #print("   t %.20f" % t)
         #print("tget %.20f" % self.tget)
 
         if (self.x_time%self.x_width==0) :
@@ -551,6 +582,13 @@ class plotPanel(wx.Panel):
                 self.values2 = []
                 self.x_time = 0 
 
+                """
+                if i> 3:
+                   self.ax1.clear()
+                   self.ax2.clear()
+                   self.fig.canvas.restore_region(self.background)
+                   self.fig.canvas.draw() 
+                """
                 self.ax1.clear()
                 self.ax1.set_xlim([0,self.x_width])
                 self.ax1.set_ylim([-2,55]) 
@@ -558,9 +596,9 @@ class plotPanel(wx.Panel):
                 self.ax2.clear()          
                 self.ax2.set_xlim([0,self.x_width])
                 self.ax2.set_ylim([-2,350])
-                self.ax2.set_ylabel('Flow (L/Min)')         
+                self.ax2.set_ylabel('Flow (L/Min)')
+       
         return  
-  
 
     def prepare_ui(self, filenames = [], callback = None, parent = None, build_dimensions = None):
         self.filenames = filenames
