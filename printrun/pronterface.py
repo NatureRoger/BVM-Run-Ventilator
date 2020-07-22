@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Printrun.  If not, see <http://www.gnu.org/licenses/>.
 
+
 import os
 import platform
 import queue
@@ -1477,11 +1478,12 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
             if scanned:
                 port = scanned[0]
         baud = 115200
+        ##self.log(_("try 01..."))
         try:
             baud = int(self.baud.GetValue())
         except:
             self.logError(_("Could not parse baud rate: ")
-                          + "\n" + traceback.format_exc())
+                          + "\n" + traceback.format_exc())   
         if self.paused:
             self.p.paused = 0
             self.p.printing = 0
@@ -1490,16 +1492,17 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
             wx.CallAfter(self.printONEbtn.SetLabel, _("Exe1"))
             wx.CallAfter(self.toolbarsizer.Layout)
             self.paused = 0
-            if self.sdprinting:
-                self.p.send_now("M26 S0")
+            ##if self.sdprinting:
+            ##    self.p.send_now("M26 S0")
         if not self.connect_to_printer(port, baud, self.settings.dtr):
-            return
+            return     
         if port != self.settings.port:
-            self.set("port", port)
+            self.set("port", port)    
         if baud != self.settings.baudrate:
             self.set("baudrate", str(baud))
+    
         if self.predisconnect_mainqueue:
-            self.recoverbtn.Enable()
+            self.recoverbtn.Enable()  
 
     def store_predisconnect_state(self):
         self.predisconnect_mainqueue = self.p.mainqueue
@@ -1530,8 +1533,8 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
             wx.CallAfter(self.pausebtn.SetLabel, _("Pause"))
             wx.CallAfter(self.printbtn.SetLabel, _("Execute"))
             self.paused = 0
-            if self.sdprinting:
-                self.p.send_now("M26 S0")
+            ##if self.sdprinting:
+            ##    self.p.send_now("M26 S0")
 
         # Relayout the toolbar to handle new buttons size
         wx.CallAfter(self.toolbarsizer.Layout)
@@ -1572,12 +1575,12 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         if self.paused:
             self.p.paused = 0
             self.paused = 0
-            if self.sdprinting:
-                print ('sdprinting')
-                self.on_startprint()
-                self.p.send_now("M26 S0")
-                self.p.send_now("M24")
-                return
+            ##if self.sdprinting:
+            ##    print ('sdprinting')
+            ##    self.on_startprint()
+            ##    self.p.send_now("M26 S0")
+            ##    self.p.send_now("M24")
+            ##    return
 
         if not self.fgcode:
             wx.CallAfter(self.statusbar.SetStatusText, _("No file loaded. Please use load first."))
@@ -1702,11 +1705,11 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
             if self.settings.display_progress_on_printer:            
                 printer_progress_string = "M117 PausedInPronterface"
                 self.p.send_now(printer_progress_string)
-            if self.sdprinting:
-                self.p.send_now("M25")
-            else:
-                if not self.p.printing:
-                    return
+            ##if self.sdprinting:
+            ##    self.p.send_now("M25")
+            ##else:
+            ##    if not self.p.printing:
+            ##        return
                 self.p.pause()
                 self.p.runSmallScript(self.pauseScript)
             self.paused = True
@@ -1720,10 +1723,10 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
                 printer_progress_string = "M117 Resuming"
                 self.p.send_now(printer_progress_string)
             self.paused = False
-            if self.sdprinting:
-                self.p.send_now("M24")
-            else:
-                self.p.resume()
+            ##if self.sdprinting:
+            ##    self.p.send_now("M24")
+            ##else:
+            self.p.resume()
             wx.CallAfter(self.pausebtn.SetLabel, _("Pause"))
             wx.CallAfter(self.toolbarsizer.Layout)  
             PauseHasBeenPressed = False  ### Added by Roger at 2020-04-23
@@ -2191,7 +2194,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         if dlg.ShowModal() == wx.ID_OK:
             target = dlg.GetStringSelection()
             if len(target):
-                self.recvlisteners.append(self.waitforsdresponse)
+                ##self.recvlisteners.append(self.waitforsdresponse)
                 self.p.send_now("M23 " + target.lower())
         dlg.Destroy()
 
@@ -2801,14 +2804,14 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
             wx.CallAfter(self.statusbar.SetStatusText, l)
         if "File selected" in l:
             wx.CallAfter(self.statusbar.SetStatusText, _("Starting print"))
-            self.sdprinting = True
-            self.p.send_now("M24")
+            ##self.sdprinting = True
+            ##self.p.send_now("M24")
             self.startcb()
             return
         if "Done printing file" in l:
             wx.CallAfter(self.statusbar.SetStatusText, l)
             self.sdprinting = False
-            self.recvlisteners.remove(self.waitforsdresponse)
+            ##self.recvlisteners.remove(self.waitforsdresponse)
             self.endcb()
             return
         if "SD printing byte" in l:
