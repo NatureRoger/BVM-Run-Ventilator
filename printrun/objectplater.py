@@ -92,7 +92,7 @@ class PlaterPanel(wx.Panel):
         exportbutton = wx.Button(panel, label = _("Export"))
         exportbutton.Bind(wx.EVT_BUTTON, self.export)
         sizer.Add(exportbutton, pos = (0, 1), span = (1, 1), flag = wx.EXPAND)
-        if callback is not None:
+        if callback != None:
             donebutton = wx.Button(panel, label = _("Done"))
             donebutton.Bind(wx.EVT_BUTTON, lambda e: self.done(e, callback))
             sizer.Add(donebutton, pos = (6, 0), span = (1, 1), flag = wx.EXPAND)
@@ -374,21 +374,20 @@ class plotPanel(wx.Panel):
 
         if 'raspi' in platform_str:  ## raspberry pi slow down the refresh interval
             self.x_width=100
-            v_interval=90
-            self.recv_time=0.1
-            self.plot_time=0.25
-            #self.blockFactor=6
-            self.blockFactor=4
+            v_interval=120
+            self.recv_time=0.12
+            self.plot_time=0.24
+            self.blockFactor=6
         else:
             self.x_width=100
-            v_interval=60
+            v_interval=80
             self.recv_time=0.1
             self.plot_time=0.1
             self.blockFactor=3
 
             """
             self.x_width=100
-            v_interval=60
+            v_interval=80
             self.recv_time=0.1
             self.plot_time=0.1
             self.blockFactor=3
@@ -490,6 +489,9 @@ class plotPanel(wx.Panel):
                   self.ax2.set_ylim([-2,350])
                   self.ax2.set_ylabel('Flow (L/Min)')              
 
+
+        t3 = time.time()
+
         if (arduinoString_ok==True):
             Flow_value = 0
 
@@ -513,8 +515,6 @@ class plotPanel(wx.Panel):
               Flow_value = calc_Flow_value(self.Radius,self.radius_tube, Velocity)
               #print ("; BMP180 TempC, cmH2O ; DP810-50radius_tube0PA TempC, Pitot Tube Diff Pressrue : %s, %s, %s, %s, %s" % (temp, P,SDP_temp, diff_P, Flow_value))
             
-
-            t3 = time.time()
 
             if i < self.base_P_TEST_TIMES and P>0:
               self.Total_P = self.Total_P + P
@@ -552,7 +552,7 @@ class plotPanel(wx.Panel):
 
         t2 = time.time()
         t = t2 - self.t1
-        t3r = t2 - t3
+        #t3r = t2 - t3
         self.tget= t
         #print("t %.20f , t3r %.20f" % (t, t3r))
         #print("   t %.20f" % t)
@@ -605,7 +605,7 @@ class Plater(wx.Frame):
         self.SetIcon(wx.Icon(iconfile("plater.png"), wx.BITMAP_TYPE_PNG))
         #self.prepare_ui(**kwargs)
         panel = wx.Panel(self)
-        #if kwargs: # If kwargs is not empty.
+        #if kwargs: # If kwargs != empty.
         #  print(kwargs)
         """
           {'callback': <bound method PronterWindow.platecb of <printrun.pronterface.PronterWindow object at 0x0000000003720C18>>, 'parent': <printrun.pronterface.PronterWindow object at 0x0000000003720C18>, 'build_dimensions': [200.0, 200.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 'circular_platform': False, 'simarrange_path': '', 
