@@ -35,7 +35,7 @@ def setting_add_tooltip(func):
             sep = "\n"
             if helptxt.find("\n") >= 0:
                 sep = "\n\n"
-        if self.default is not "":
+        if self.default !="":
             deftxt = _("Default: ")
             resethelp = _("(Control-doubleclick to reset to default value)")
             if len(repr(self.default)) > 10:
@@ -71,7 +71,7 @@ class Setting:
 
     def set_default(self, e):
         import wx
-        if e.CmdDown() and e.ButtonDClick() and self.default is not "":
+        if e.CmdDown() and e.ButtonDClick() and self.default != "":
             confirmation = wx.MessageDialog(None, _("Are you sure you want to reset the setting to the default value: {0!r} ?").format(self.default), _("Confirm set default"), wx.ICON_EXCLAMATION | wx.YES_NO | wx.NO_DEFAULT)
             if confirmation.ShowModal() == wx.ID_YES:
                 self._set_value(self.default)
@@ -402,7 +402,7 @@ class Settings:
                 cb = getattr(self, "_%s_cb" % key)
             except AttributeError:
                 pass
-            if cb is not None: cb(key, value)
+            if cb != None: cb(key, value)
         except:
             logging.warning((_("Failed to run callback after setting \"%s\":") % key) +
                             "\n" + traceback.format_exc())
