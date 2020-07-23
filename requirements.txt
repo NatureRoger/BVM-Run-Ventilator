@@ -13,6 +13,7 @@ dbus-python >= 1.2.0 ; sys_platform == 'linux'
 pyobjc-framework-Cocoa ; sys_platform == 'darwin'
 pyreadline ; sys_platform == 'win32'
 pysqlite3
+PyMySQL
 matplotlib
 numba
 drawnow

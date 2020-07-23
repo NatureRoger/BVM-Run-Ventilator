@@ -129,6 +129,13 @@ class StringSetting(wxSetting):
         self.widget = wx.TextCtrl(parent, -1, str(self.value))
         return self.widget
 
+class PasswordSetting(wxSetting):   ## Add By Roger 2020-07-23
+
+    def get_specific_widget(self, parent):
+        import wx
+        self.widget = wx.TextCtrl(parent, -1, str(self.value), style=wx.TE_PASSWORD|wx.TE_PROCESS_ENTER)
+        return self.widget        
+
 class ComboSetting(wxSetting):
 
     def __init__(self, name, default, choices, label = None, help = None, group = None):
@@ -281,9 +288,12 @@ class Settings:
         self._add(StringSetting("FlowMeter_port", "", _("FlowMeter Serial port"), _("Port used to communicate with FlowMeter")))
         self._add(ComboSetting("FlowMeter_baudrate", 9600, self.__baudrate_list(), _("Baud rate"), _("Communications Speed with FlowMeter")))        
         #self._add(BooleanSetting("Monitor_Server_mode", False, _("Monitor Server mode for sending warning and emerency message to Monitoring<Mysql>‎ Server"), _("When using a Ethernet wire connection to the BVM-run Ventilator, the Monitor Server mode is tuned on and the Flow sensor/ Pressure sensor is active runing curve chart <matplot chart>, then the BVM-run Ventilator will send warning and emerency message to Monitoring<Mysql>‎ Server.")), root.update_Monitor_Server_mode)
+        self._add(StringSetting("Monitor_Location", "Location 1-0-1", _("Location Show on Monitor Server"), _("Please type the BVM-Run location.")))
         self._add(BooleanSetting("Monitor_Server_mode", False, _("Monitor Server mode for sending warning and emerency message to Monitoring<Mysql>‎ Server"), _("When using a Ethernet wire connection to the BVM-run Ventilator, the Monitor Server mode is tuned on and the Flow sensor/ Pressure sensor is active runing curve chart <matplot chart>, then the BVM-run Ventilator will send warning and emerency message to Monitoring<Mysql>‎ Server.")))        
         self._add(StringSetting("Monitor_Mysql_Server_ip", "10.1.0.1", _("Monitor Mysql database Server ip address"), _("Port used to communicate with BVM-run Ventilator")))
-        self._add(StringSetting("Monitor_Mysql_Server_port", "3306", _("Monitor Mysql database Server ip address"), _("Port used to communicate with Monitor Mysql database Server by BVM-run Ventilator")))
+        self._add(StringSetting("Monitor_Mysql_Server_port", "3306", _("Monitor Mysql database Server port"), _("Port used to communicate with Monitor Mysql database Server by BVM-run Ventilator")))
+        self._add(StringSetting("Monitor_Mysql_Account", "mysql-01", _("Access account of Monitor Mysql database"), _("Access account of Monitor Mysql database")))
+        self._add(PasswordSetting("Monitor_Mysql_Password", "mysql-01", _("Access Password of Monitor Mysql database"), _("Access Password of Monitor Mysql database")))
         self._add(BooleanSetting("tcp_streaming_mode", False, _("TCP streaming mode"), _("When using a TCP connection to the BVM-run Ventilator, the streaming mode will not wait for acks from the BVM-run Ventilator to send new commands. This will break things such as ETA prediction, but can result in smoother BVM-run Ventilator running.")), root.update_tcp_streaming_mode)
         self._add(BooleanSetting("rpc_server", True, _("RPC server"), _("Enable RPC server to allow remotely querying BVM-run Ventilator running status")), root.update_rpc_server)
         self._add(BooleanSetting("dtr", True, _("DTR"), _("Disabling DTR would prevent Arduino (RAMPS) from resetting upon connection"), "Printer"))
