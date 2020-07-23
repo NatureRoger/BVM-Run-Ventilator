@@ -104,7 +104,7 @@ def DB_Volumn_Get_Stroke(db, BVM_id, V_mL, debug_mod=0):
     for row in cursor:
         if (debug_mod>0) : print ("BVM_id = %s" % row[0])
         if (debug_mod>0) : print ("Stroke  = %s" % row[1])
-        if (debug_mod>0) : print ("Volumn = %s" % row[2])
+        if (debug_mod>0) : print ("Volume = %s" % row[2])
         return row[1]
 
 
@@ -425,8 +425,8 @@ class PronterWindow(MainWindow, pronsole.pronsole):
         self.sentglines = queue.Queue(0)
         self.cpbuttons = {
             "motorsoff": SpecialButton(_("Motors off"), ("M84"), (250, 250, 250), _("Switch all motors off")),
-            "extrude": SpecialButton(_("Extrude"), ("pront_extrude"), (225, 200, 200), _("Advance extruder by set length")),
-            "reverse": SpecialButton(_("Reverse"), ("pront_reverse"), (225, 200, 200), _("Reverse extruder by set length")),
+            #"extrude": SpecialButton(_("Extrude"), ("pront_extrude"), (225, 200, 200), _("Advance extruder by set length")),
+            #"reverse": SpecialButton(_("Reverse"), ("pront_reverse"), (225, 200, 200), _("Reverse extruder by set length")),
         }
         self.custombuttons = []
         self.btndict = {}
@@ -1599,7 +1599,15 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.paused = 0
         global PauseHasBeenPressed   ### Added by Roger at 2020-04-23
         PauseHasBeenPressed = False
-        threading.Thread(target = self.LoopingPrint).start()   ### Added by Roger at 2020-04-23
+        
+        # https://stackoverflow.com/questions/18018033/how-to-stop-a-looping-thread-in-python
+        t = threading.Thread(target = self.LoopingPrint)  ### Added by Roger at 2020-04-23
+        t.start()                                         ### Modified by Roger at 2020-07-23
+        t.do_run = True
+
+        #### use follow statment to turn off the t threading 
+        # t.do_run = False
+        # t.join() 
 
     ## In gui/toolbar.py , Added By Roger 2020-05-30
     """
@@ -1732,6 +1740,8 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
             PauseHasBeenPressed = False  ### Added by Roger at 2020-04-23
             threading.Thread(target = self.LoopingPrint).start()   ### Added by Roger at 2020-04-23
 
+
+
     def recover(self, event):
         self.extra_print_time = 0
         if not self.p.online:
@@ -1743,6 +1753,20 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.p.send_now("G28 X Y")
         self.on_startprint()
         self.p.startprint(self.predisconnect_mainqueue, self.p.queueindex)
+
+    #  --------------------------------------------------------------
+    #  off          Added by Roger 2020-07-23
+    #  --------------------------------------------------------------
+
+    def off(self, event = None):   
+        self.p.send_now("M84")
+        #### use follow statment to turn off the t threading 
+        t.do_run = False
+        t.join() 
+        message = _("echo : Turn off stepper motor.")
+        self.p.send_now("G28 X")
+        self.log(_("Auto-home: G28 X"))
+        message = _("echo : Auto-home.")
 
     #  --------------------------------------------------------------
     #  Creat_Gcode          Added by Roger 2020-04-27
@@ -2204,7 +2228,8 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
             self.log(_("Auto-home: G28 X"))
         else:
             self.logError(_("Ventilator is not online. <<<Taiwan can Help>>>"))
-        while (PauseHasBeenPressed is False):   
+   
+        while (getattr(t, "do_run", True) and (PauseHasBeenPressed is False)):   
             wx.CallAfter(self.pausebtn.SetLabel, _("Pause"))
             wx.CallAfter(self.pausebtn.Enable)
             wx.CallAfter(self.printbtn.SetLabel, _("Restart"))
@@ -2230,7 +2255,6 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.recvlisteners.append(self.listfiles)
         self.p.send_now("M21")
         self.p.send_now("M20")
-
 
 
     def model_to_gcode_filename(self, filename):
