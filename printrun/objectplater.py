@@ -29,7 +29,7 @@ from numba import jit
 import math
 
 import matplotlib
-matplotlib.use('GTK3Agg') 
+##matplotlib.use('GTK3Agg') 
 import numpy as np
 import matplotlib.figure as mfigure
 import matplotlib.animation as manim
