@@ -19,12 +19,12 @@ from .utils import install_locale, iconfile
 install_locale('plater')
 
 import logging
-import os
+#import os
 import platform
 import types
 import wx
 
-import time
+#import time
 from numba import jit
 import math
 
@@ -40,6 +40,66 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 import serial # import Serial Library
 import random
 random.seed()
+
+
+import calendar
+import time
+from time import strptime
+#time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+#time.strftime("%Y-%m-%d %H:%M:%S", strptime('Fri, 03 Jun 2016 06:01:26 GMT', "%a, %d %b %Y %H:%M:%S %Z"))
+#stime=time.strftime("%H:%M:%S", strptime('Fri, 03 Jun 2016 06:01:26 GMT', "%a, %d %b %Y %H:%M:%S %Z"))
+import datetime
+from datetime import timedelta
+
+import sys
+import os     
+
+import random
+random.seed() 
+
+import pymysql.cursors
+import socket
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
+
+
+def DBGetProxy_IPx(db, proxy_no): 
+    IP_Address = ''
+    for p in range(proxy_no, 2, -1):
+      field_name = 'Proxy%sIP' % (p)
+      sql_select_query = "SELECT Proxy%sIP FROM hCityWgetIndex_ProxyIP" % (p)
+      print (sql_select_query)
+
+      # 使用cursor()方法獲取操作遊標
+      cur = db.cursor()
+      cur.execute(sql_select_query)     #執行sql語句
+
+      results = cur.fetchall()    #獲取查詢的所有記錄
+      print(results)
+      #遍歷結果
+      i=0
+      for row in results:
+          #print(row)
+          IP_Address = row.get(field_name)
+          """
+          for (key, value) in row.items() :  
+            print(key , " :: ", value )
+            IP_Address = value
+            print(IP_Address)
+            if IP_Address !='0.0.0.0':
+              return IP_Address
+            i=i+1    
+          """
+    return IP_Address     
 
 def patch_method(obj, method, replacement):
     orig_handler = getattr(obj, method)
@@ -325,10 +385,89 @@ def calc_Flow_value(Radius,radius_tube, Velocity):
 
 
 class plotPanel(wx.Panel):
-    def __init__(self, parent, strPort, Baudrate, id=-1, dpi=None, **kwargs):
+    def __init__(self, parent, strPort, Baudrate, 
+        Monitor_Location, Monitor_mode, Mysql_Server_ip, Mysql_port, Mysql_Database, Mysql_Account, Mysql_Password, 
+        id=-1, dpi=None, **kwargs):
     #    super().__init__(parent, id=id, **kwargs)    
     #def __init__(self, parent):
         wx.Panel.__init__(self, parent)
+
+        if Monitor_mode:
+            #use pymysql method
+            # https://pymysql.readthedocs.io/en/latest/user/examples.html
+            db = pymysql.connect(host=Mysql_Server_ip,
+                user=Mysql_Account, passwd=Mysql_Password, db=Mysql_Database, charset="utf8", cursorclass=pymysql.cursors.DictCursor)
+            #connection = pymysql.connect(host='localhost',
+            #                             user='user',
+            #                             password='passwd',
+            #                             db='db',
+            #                             charset='utf8mb4',
+            #                             cursorclass=pymysql.cursors.DictCursor)
+
+            DEBUG_FLG=1
+
+            proxy_r_num = random.randint(3, 10)
+            Proxy_IP=  DBGetProxy_IPx(db, proxy_r_num)
+            Proxy_PORT = '8888'
+
+            if DEBUG_FLG>0:
+              print ('Proxy IP = %s , Port : %s' % (Proxy_IP, Proxy_PORT))
+
+            proxyusername = "twhgcloud"
+            mysecret      = "87973222"
+            Proxy_HTTP = 'http://%s:%s@%s:%s' % (proxyusername,mysecret,Proxy_IP,Proxy_PORT)
+            Proxy_HTTPS = 'https://%s:%s@%s:%s' % (proxyusername,mysecret,Proxy_IP,Proxy_PORT)
+
+            proxies = {
+              "http": Proxy_HTTP,        
+              "https": Proxy_HTTPS
+            }
+
+            print ("Proxy_HTTP = %s" % (Proxy_HTTP) )
+            print ("Proxy_HTTPS = %s" % (Proxy_HTTPS) )
+            #########
+
+            v_date = datetime.date.today()
+            stime=time.strftime("%H:%M:%S", time.localtime())
+            print('date = %s time = %s' % (v_date , stime))
+
+            ip_address= get_ip()
+            print('ip address = %s' % (ip_address))
+
+
+            #0. 使用cursor()方法獲取操作遊標
+            cur = db.cursor()
+
+            ##1.查詢操作
+            ## 編寫sql 查詢語句  user 對應我的表名
+            #sql = "select * from user"
+            v_source = 1
+            sql_select_query = "select hSource, hNo, hCity, hArea, hTitle, hAddress from hCityWgetObjPool where (hAction='sale' and hSource=%s and hStatus_date='0000-00-00 00:00:00' ) order by command  ASC LIMIT 5" % (v_source)
+            try:
+                cur.execute(sql_select_query)     #執行sql語句
+             
+                results = cur.fetchall()    #獲取查詢的所有記錄
+                print("hSource","hNo","hCity" , "hArea", "hTitle", "hAddress")
+                #遍歷結果
+                print ("rows = %s" % len(results) )
+                for row in results :
+                    #print(row)
+                    v_source = row.get('hSource')
+                    v_no = row.get('hNo')
+                    v_city = row.get('hCity')
+                    v_Area = row.get('hArea')        
+                    v_Title = row.get('hTitle')
+                    v_Address = row.get('hAddress')                         
+                    print(v_source,v_no,v_city, v_Area, v_Title, v_Address)
+            except Exception as e:
+                raise e
+            finally:
+                db.close()    #關閉連接
+
+
+
+
+
         
 
         #self.fig, (self.ax1,self.ax2) = plt.subplots(nrows=2)
@@ -425,6 +564,7 @@ class plotPanel(wx.Panel):
     def anim(self,i):
         arduinoString_ok=False
         dataArray=[9,0,0,0,0]
+        decode_err_flg=0
         
         if (self.tget==0 or self.tget>self.plot_time):
           self.t1 = time.time()
@@ -435,14 +575,21 @@ class plotPanel(wx.Panel):
                 pass #do nothing
 
             arduinoString = self.arduinoData.readline() #read the line of text from the serial port
+            ##1  arduinoString = unicode(arduinoString, errors='ignore')
             #print(arduinoString)
             #print(arduinoString.decode()[0])
-            if(arduinoString[0]==48 and (self.tget==0 or self.tget>self.recv_time)):  
-              dataArray = arduinoString.decode().strip().split(',')  #Split it into an array called dataArray 
-              if (float( dataArray[4] )>0.2 or float( dataArray[2] )> self.base_P+1) or random.randint(1, 10)>self.blockFactor :
-                arduinoString_ok=True                                          
-                                                           # str→bytes：encode()方法。str通过encode()方法可以转换为bytes。
-                                                           #bytes→str：decode()方法。如果我们从网络或磁盘上读取了字节流，那么读到的数据就是bytes。要把bytes变为str，就需要用decode()方法。
+            if(arduinoString[0]==48 and (self.tget==0 or self.tget>self.recv_time)): 
+                try:
+                    #print(arduinoString.decode())
+                    dataArray = arduinoString.decode().strip().split(',')  #Split it into an array called dataArray 
+                    #str→bytes：encode()。str encode() -> bytes。
+                    #bytes→str：decode()。  bytes -> str，need decode()。
+                except:
+                    print('UnicodeDecodeError: %s' % arduinoString)
+                    decode_err_flg=1
+                    
+                if (float( dataArray[4] )>0.2 or float( dataArray[2] )> self.base_P+1) or random.randint(1, 10)>self.blockFactor :
+                    arduinoString_ok=True                                                                           
                   #line 115, in <module> if ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
                   #UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfe in position 0: invalid start byte
               
@@ -457,9 +604,10 @@ class plotPanel(wx.Panel):
                    self.ax2.set_ylim([-2,350])
                    self.ax2.set_ylabel('Flow (L/Min)')  
 
-            elif ('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
-               print(arduinoString.decode())
-               arduinoString_ok==False
+            elif (decode_err_flg==0):
+               if('SDP810-500PA' in arduinoString.decode()  or 'BMP180' in arduinoString.decode()):
+                 print(arduinoString.decode())
+                 arduinoString_ok==False
             else:
                arduinoString_ok==False                  
 
@@ -608,16 +756,58 @@ class Plater(wx.Frame):
         #if kwargs: # If kwargs != empty.
         #  print(kwargs)
         """
-          {'callback': <bound method PronterWindow.platecb of <printrun.pronterface.PronterWindow object at 0x0000000003720C18>>, 'parent': <printrun.pronterface.PronterWindow object at 0x0000000003720C18>, 'build_dimensions': [200.0, 200.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 'circular_platform': False, 'simarrange_path': '', 
-          'antialias_samples': 0, 'com_port': 'com6', 'com_baudrate': '9600'}
+         {'callback': <bound method PronterWindow.platecb of <printrun.pronterface.PronterWindow object at 0x00000000036E88B8>>, 
+         'parent':: <printrun.pronterface.PronterWindow object at 0x00000000036E88B8>, 
+         'build_dimensions': [200.0, 200.0, 100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 
+         'circular_platform': False, 'simarrange_path': '', 'antialias_samples': 0, 
+         'com_port': 'None', 'com_baudrate': 9600, 'M_Location': 'Location 1-0-1', 
+         'M_Server_mode': True, 'M_Mysql_Server_ip': '10.1.0.1', 'M_Mysql_Server_port': '3306', 
+         'M_Mysql_Account': 'mysql-01', 'M_Mysql_Password': 'aaaa'}
         """
         print ('Connect Flow Meter & Pressure sensor Device')
         self.SerialPort = kwargs.get("com_port", None) 
         self.SerialBaudrate = kwargs.get("com_baudrate", 9600) 
+
+        self.M_Location = kwargs.get("M_Location", '') 
+        self.M_Server_mode = kwargs.get("M_Server_mode", False)
+        self.M_Mysql_Server_ip = kwargs.get("M_Mysql_Server_ip", '10.0.0.1') 
+        self.M_Mysql_Server_port = kwargs.get("M_Mysql_Server_port", '3306')
+        self.M_Mysql_Database = kwargs.get("M_Mysql_Database", 'BVM_Monitor')        
+        self.M_Mysql_Account = kwargs.get("M_Mysql_Account", 'roger')
+        self.M_Mysql_Password = kwargs.get("M_Mysql_Password", '12345')   
+
+        print ('Monitoring Location: %s , Monitoring mode: %s' % (self.M_Location, self.M_Server_mode))
+        print ('Mysql Server ip: %s , Mysql port: %s' % (self.M_Mysql_Server_ip, self.M_Mysql_Server_port))
+        #print ('Mysql Database: %s ,  Mysql Account: %s , Mysql Password: %s' % (self.M_Mysql_Database, self.M_Mysql_Account, self.M_Mysql_Password))
+        print ('Mysql Database: %s ,  Mysql Account: %s' % (self.M_Mysql_Database, self.M_Mysql_Account))
+        
         print ('SerialPort: %s , Baudrate: %s' % (self.SerialPort, self.SerialBaudrate))
         if (self.SerialPort=='None'):
             print('Random Value of Flow & Pressure for DEMO.')
-        self.panel = plotPanel(panel, self.SerialPort, self.SerialBaudrate)
+
+        """
+        M_Location: Location 1-0-1 , M_Server_mode: True
+        M_Mysql_Server_ip: 10.10.1.70 , M_Mysql_Server_port: 3306
+        M_Mysql_Database: brand2 , M_Mysql_Account: robin , M_Mysql_Password: RobiN5008
+
+        Traceback (most recent call last):
+  File "D:\BVM-Run-Ventilator\printrun\pronterface.py", line 848, in plate
+    M_Mysql_Password = self.settings.Monitor_Mysql_Password
+  File "D:\BVM-Run-Ventilator\printrun\objectplater.py", line 656, in __init__
+    self.M_Mysql_Password
+TypeError: __init__() takes from 4 to 6 positional arguments but 11 were given
+        """
+
+
+        self.panel = plotPanel(panel, self.SerialPort, self.SerialBaudrate,
+            self.M_Location,
+            self.M_Server_mode,
+            self.M_Mysql_Server_ip,
+            self.M_Mysql_Server_port,
+            self.M_Mysql_Database,
+            self.M_Mysql_Account,
+            self.M_Mysql_Password
+            )
         #self.panel = plotPanel(panel, 'Com6')
 
         """
