@@ -1,0 +1,84 @@
+
+Installing MySQL on WIN10 - Windows Subsystem for Linux (WSL)
+Ubuntu 16.04.6 LTS
+
+Step 0 
+Windows Subsystem for Linux (WSL) 環境設定
+https://hackmd.io/@billsun/BJByCIUHf?type=view
+
+Step 1 — Installing MySQL
+
+	roger@LAPTOP-RSNNRA12:~$ sudo apt-get update
+	roger@LAPTOP-RSNNRA12:~$ apt-get install mysql-server
+		(type root password  twice)
+	roger@LAPTOP-RSNNRA12:~$
+
+	roger@LAPTOP-RSNNRA12:~$ find /etc | grep my.cnf
+		/etc/alternatives/my.cnf
+		/etc/mysql/my.cnf
+		/etc/mysql/my.cnf.fallback
+
+Step 2 — Configuring & start mysql MySQL
+
+	roger@LAPTOP-RSNNRA12:~$ sudo service mysql start
+			No directory, logging in with HOME=/
+
+		Step 2.5 Stop MYSQL service:
+		roger@LAPTOP-RSNNRA12:~$ sudo service mysql stop
+
+		Change home directory of mysql from nonexistent to original directory where it is supposed to be:
+
+		roger@LAPTOP-RSNNRA12:~$ sudo usermod -d /var/lib/mysql/ mysql
+
+
+Step 3 — Now start mysql server again with:
+	roger@LAPTOP-RSNNRA12:~$ sudo service mysql start
+
+
+Step 4 — Use MySQL server
+
+roger@LAPTOP-RSNNRA12:~$ mysql -u root -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 4
+Server version: 5.7.30-0ubuntu0.16.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+
+
+======
+
+MySQL 5.7 Reference Manual
+https://dev.mysql.com/doc/refman/5.7/en/
+
+
+======
+
+USE ifconfig to Check your mysql server inet addr --- (192.168.1.14)
+
+roger@LAPTOP-RSNNRA12:~$ ifconfig
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Unknown
+          UP LOOPBACK RUNNING  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+wifi0     Link encap:Ethernet  HWaddr 3c:f0:11:17:ad:d6
+          inet addr:192.168.1.14  Bcast:192.168.1.255  Mask:255.255.255.0
+          inet6 addr: fe80::58a0:8fdc:5c81:b1ba/64 Scope:Unknown
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
