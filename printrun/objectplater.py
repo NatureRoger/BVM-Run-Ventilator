@@ -384,9 +384,32 @@ def calc_Flow_value(Radius,radius_tube, Velocity):
     return 3.141592653589793 * (Radius**2- radius_tube**2) *  Velocity * 1000 * 60
 
 
+'''
+CREATE TABLE `Ventilator_monitor` (
+    `id` INT(4) NOT NULL AUTO_INCREMENT,
+    `Area` INT(1) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Monitor Area Group 監控分組 , ex: 1 => Building A , 2 Building B',
+    `BVM_Run_Location` VARCHAR(50) NOT NULL DEFAULT '' COMMENT 'Location of BVM_Run , 位置描述 ',
+    `Active` VARCHAR(2) NOT NULL DEFAULT 'N' COMMENT 'Y Active , N not Active',
+    `Active_datetime` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Active時間',
+    `Status_datetime` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '狀態更新時間',
+    `message_type` INT(1) UNSIGNED NOT NULL DEFAULT '0' COMMENT 'Message type , ex: 0 => Normal , 1~9 waring , 91~99 Emergency message',
+    `Status_message` VARCHAR(50) NOT NULL DEFAULT '' COMMENT 'Status Message',
+    PRIMARY KEY (`id`),
+    INDEX `Area_Location` (`Area`, `BVM_Run_Location`) USING BTREE,
+    INDEX `Area_message_type` (`Area`, `message_type`) USING BTREE,
+    INDEX `Active_datetime` (`Active_datetime`) USING BTREE,
+    INDEX `message_type` (`message_type`) USING BTREE
+)
+COMMENT='Ventilator Monitor Table'
+COLLATE='utf8_general_ci'
+ENGINE=MyISAM
+;
+'''
+
 class plotPanel(wx.Panel):
     def __init__(self, parent, strPort, Baudrate, 
         Monitor_Location, Monitor_mode, Mysql_Server_ip, Mysql_port, Mysql_Database, Mysql_Account, Mysql_Password, 
+        M_pressure, M_pUP_percentage, M_pDOWN_percentage, M_velocity, M_vUP_percentage, M_vDOWN_percentage,
         id=-1, dpi=None, **kwargs):
     #    super().__init__(parent, id=id, **kwargs)    
     #def __init__(self, parent):
@@ -404,28 +427,6 @@ class plotPanel(wx.Panel):
             #                             charset='utf8mb4',
             #                             cursorclass=pymysql.cursors.DictCursor)
 
-            DEBUG_FLG=1
-
-            proxy_r_num = random.randint(3, 10)
-            Proxy_IP=  DBGetProxy_IPx(db, proxy_r_num)
-            Proxy_PORT = '8888'
-
-            if DEBUG_FLG>0:
-              print ('Proxy IP = %s , Port : %s' % (Proxy_IP, Proxy_PORT))
-
-            proxyusername = "twhgcloud"
-            mysecret      = "87973222"
-            Proxy_HTTP = 'http://%s:%s@%s:%s' % (proxyusername,mysecret,Proxy_IP,Proxy_PORT)
-            Proxy_HTTPS = 'https://%s:%s@%s:%s' % (proxyusername,mysecret,Proxy_IP,Proxy_PORT)
-
-            proxies = {
-              "http": Proxy_HTTP,        
-              "https": Proxy_HTTPS
-            }
-
-            print ("Proxy_HTTP = %s" % (Proxy_HTTP) )
-            print ("Proxy_HTTPS = %s" % (Proxy_HTTPS) )
-            #########
 
             v_date = datetime.date.today()
             stime=time.strftime("%H:%M:%S", time.localtime())
@@ -441,34 +442,31 @@ class plotPanel(wx.Panel):
             ##1.查詢操作
             ## 編寫sql 查詢語句  user 對應我的表名
             #sql = "select * from user"
-            v_source = 1
-            sql_select_query = "select hSource, hNo, hCity, hArea, hTitle, hAddress from hCityWgetObjPool where (hAction='sale' and hSource=%s and hStatus_date='0000-00-00 00:00:00' ) order by command  ASC LIMIT 5" % (v_source)
+            vSet_AREA = 1
+            sql_select_query = "select Area, BVM_Run_Location, Active, Active_datetime, Status_datetime, message_type, Status_message from Ventilator_monitor where Area=%s order by message_type desc" % (vSet_AREA)
             try:
                 cur.execute(sql_select_query)     #執行sql語句
              
                 results = cur.fetchall()    #獲取查詢的所有記錄
-                print("hSource","hNo","hCity" , "hArea", "hTitle", "hAddress")
+                print("Area","BVM_Run_Location","Active" , "Active_datetime", "Status_datetime", "message_type", "Status_message")
                 #遍歷結果
                 print ("rows = %s" % len(results) )
                 for row in results :
                     #print(row)
-                    v_source = row.get('hSource')
-                    v_no = row.get('hNo')
-                    v_city = row.get('hCity')
-                    v_Area = row.get('hArea')        
-                    v_Title = row.get('hTitle')
-                    v_Address = row.get('hAddress')                         
-                    print(v_source,v_no,v_city, v_Area, v_Title, v_Address)
+                    v_Area = row.get('Area')
+                    v_BVM_Run_Location = row.get('BVM_Run_Location')
+                    v_Active = row.get('Active')
+                    v_Active_datetime = row.get('Active_datetime')        
+                    v_Status_datetime = row.get('Status_datetime')
+                    v_message_type = row.get('message_type')   
+                    v_Status_message = row.get('Status_message')                                             
+                    print(v_Area,v_BVM_Run_Location,v_Active, v_Active_datetime, v_Status_datetime, v_message_type, v_Status_message)
             except Exception as e:
                 raise e
             finally:
                 db.close()    #關閉連接
 
 
-
-
-
-        
 
         #self.fig, (self.ax1,self.ax2) = plt.subplots(nrows=2)
 
@@ -774,13 +772,24 @@ class Plater(wx.Frame):
         self.M_Mysql_Server_port = kwargs.get("M_Mysql_Server_port", '3306')
         self.M_Mysql_Database = kwargs.get("M_Mysql_Database", 'BVM_Monitor')        
         self.M_Mysql_Account = kwargs.get("M_Mysql_Account", 'roger')
-        self.M_Mysql_Password = kwargs.get("M_Mysql_Password", '12345')   
+        self.M_Mysql_Password = kwargs.get("M_Mysql_Password", '12345') 
+
+        self.M_pressure = kwargs.get("M_pressure", '0') 
+        self.M_pUP_percentage = kwargs.get("M_pUP_percentage", '0') 
+        self.M_pDOWN_percentage = kwargs.get("M_pDOWN_percentage", '0') 
+
+        self.M_velocity = kwargs.get("M_velocity", '0') 
+        self.M_vUP_percentage = kwargs.get("M_vUP_percentage", '0') 
+        self.M_vDOWN_percentage = kwargs.get("M_vDOWN_percentage", '0')         
 
         print ('Monitoring Location: %s , Monitoring mode: %s' % (self.M_Location, self.M_Server_mode))
         print ('Mysql Server ip: %s , Mysql port: %s' % (self.M_Mysql_Server_ip, self.M_Mysql_Server_port))
         #print ('Mysql Database: %s ,  Mysql Account: %s , Mysql Password: %s' % (self.M_Mysql_Database, self.M_Mysql_Account, self.M_Mysql_Password))
         print ('Mysql Database: %s ,  Mysql Account: %s' % (self.M_Mysql_Database, self.M_Mysql_Account))
         
+        print ('Monitering pressure: %s cmH2o, (up percentage: %s , down percentage: %s)' % (self.M_pressure, self.M_pUP_percentage, self.M_pDOWN_percentage))
+        print ('Monitering Velocity: %s L/Min, (up percentage: %s , down percentage: %s)' % (self.M_velocity, self.M_vUP_percentage, self.M_vDOWN_percentage))        
+
         print ('SerialPort: %s , Baudrate: %s' % (self.SerialPort, self.SerialBaudrate))
         if (self.SerialPort=='None'):
             print('Random Value of Flow & Pressure for DEMO.')
@@ -806,8 +815,15 @@ TypeError: __init__() takes from 4 to 6 positional arguments but 11 were given
             self.M_Mysql_Server_port,
             self.M_Mysql_Database,
             self.M_Mysql_Account,
-            self.M_Mysql_Password
+            self.M_Mysql_Password,
+            self.M_pressure,
+            self.M_pUP_percentage,
+            self.M_pDOWN_percentage, 
+            self.M_velocity,
+            self.M_vUP_percentage,
+            self.M_vDOWN_percentage                                                 
             )
+
         #self.panel = plotPanel(panel, 'Com6')
 
         """
