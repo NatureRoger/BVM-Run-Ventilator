@@ -1563,21 +1563,21 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
 
     def reset(self, event):
         self.log(_("Reset."))
-        #global PauseHasBeenPressed
-        #PauseHasBeenPressed = True 
-        dlg = wx.MessageDialog(self, _("Are you sure you want to reset the Ventilator?"), _("Reset?"), wx.YES | wx.NO)
-        if dlg.ShowModal() == wx.ID_YES:
-            self.p.reset()
-            self.sethotendgui(0)
-            self.setbedgui(0)
-            self.p.printing = 0
-            wx.CallAfter(self.printbtn.SetLabel, _("Execute"))
-            if self.paused:
-                self.p.paused = 0
-                wx.CallAfter(self.pausebtn.SetLabel, _("Pause"))
-                self.paused = 0
-            wx.CallAfter(self.toolbarsizer.Layout)
-        dlg.Destroy()
+        ##global PauseHasBeenPressed
+        ##PauseHasBeenPressed = True 
+        #dlg = wx.MessageDialog(self, _("Are you sure you want to reset the Ventilator?"), _("Reset?"), wx.YES | wx.NO)
+        #if dlg.ShowModal() == wx.ID_YES:
+        #    self.p.reset()
+        #    self.sethotendgui(0)
+        #    self.setbedgui(0)
+        #    self.p.printing = 0
+        #    wx.CallAfter(self.printbtn.SetLabel, _("Execute"))
+        #    if self.paused:
+        #        self.p.paused = 0
+        #        wx.CallAfter(self.pausebtn.SetLabel, _("Pause"))
+        #        self.paused = 0
+        #    wx.CallAfter(self.toolbarsizer.Layout)
+        #dlg.Destroy()
 
     #  --------------------------------------------------------------
     #  Print/upload handling
@@ -1585,6 +1585,7 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
     def PausePressed():     ### Added by Roger at 2020-04-23
         global PauseHasBeenPressed
         PauseHasBeenPressed = True 
+        
 
     def on_startprint(self):
         wx.CallAfter(self.pausebtn.SetLabel, _("Pause"))
@@ -1758,9 +1759,9 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
             # self.p.runSmallScript(self.pauseScript)
             self.extra_print_time += int(time.time() - self.starttime)
 
-            self.p.send_now("G28 X")
-            self.log(_("Auto-home: G28 X"))
-            message = _("echo : Auto-home.")
+            #self.p.send_now("G28 X")
+            #self.log(_("Auto-home: G28 X"))
+            #message = _("echo : Auto-home.")
             wx.CallAfter(self.pausebtn.SetLabel, _("Resume"))
             wx.CallAfter(self.toolbarsizer.Layout)
         else:

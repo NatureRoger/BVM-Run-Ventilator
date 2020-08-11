@@ -68,9 +68,9 @@ def MainToolbar(root, parentpanel = None, use_wrapsizer = False):
     self.AddStretchSpacer(prop = 1)
 
     root.loadbtn = make_autosize_button(parentpanel, _("Load file"), root.loadfile, _("Load a G-Code file"), self)
-    root.sdbtn = make_autosize_button(parentpanel, _("SD"), root.sdmenu, _("SD Card file Executing"), self)
-    root.sdbtn.Reparent(parentpanel)
-    root.printerControls.append(root.sdbtn)
+    ##root.sdbtn = make_autosize_button(parentpanel, _("SD"), root.sdmenu, _("SD Card file Executing"), self)
+    ##root.sdbtn.Reparent(parentpanel)
+    ##root.printerControls.append(root.sdbtn)
     if not hasattr(root, "printbtn"):
         root.printbtn = make_autosize_button(parentpanel, _("Execute"), root.printfile, _("Start Executing Loaded File , Looping"))
         root.statefulControls.append(root.printbtn)
@@ -92,6 +92,7 @@ def MainToolbar(root, parentpanel = None, use_wrapsizer = False):
         root.statefulControls.append(root.pausebtn)
     else:
         root.pausebtn.Reparent(parentpanel)
+
     self.Add(root.pausebtn)
     root.offbtn = make_autosize_button(parentpanel, _("Off"), root.off, _("Turn BVM-Run-Ventilator off"), self)
     root.printerControls.append(root.offbtn)
