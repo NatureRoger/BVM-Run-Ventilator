@@ -1597,12 +1597,12 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         if self.paused:
             self.p.paused = 0
             self.paused = 0
-            ##if self.sdprinting:
-            ##    print ('sdprinting')
-            ##    self.on_startprint()
-            ##    self.p.send_now("M26 S0")
-            ##    self.p.send_now("M24")
-            ##    return
+            if self.sdprinting:
+                print ('sdprinting')
+                self.on_startprint()
+                self.p.send_now("M26 S0")
+                self.p.send_now("M24")
+                return
 
         if not self.fgcode:
             wx.CallAfter(self.statusbar.SetStatusText, _("No file loaded. Please use load first."))
@@ -1621,15 +1621,8 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
         self.paused = 0
         global PauseHasBeenPressed   ### Added by Roger at 2020-04-23
         PauseHasBeenPressed = False
-        
-        # https://stackoverflow.com/questions/18018033/how-to-stop-a-looping-thread-in-python
-        t = threading.Thread(target = self.LoopingPrint)  ### Added by Roger at 2020-04-23
-        t.start()                                         ### Modified by Roger at 2020-07-23
-        t.do_run = True
+        threading.Thread(target = self.LoopingPrint).start()   ### Added by Roger at 2020-04-23        
 
-        #### use follow statment to turn off the t threading 
-        # t.do_run = False
-        # t.join() 
 
     ## In gui/toolbar.py , Added By Roger 2020-05-30
     """
@@ -1641,6 +1634,25 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
     self.Add(root.printONEbtn)
     """
     ##
+
+
+    def LoopingPrint(self):   ### Added by Roger at 2020-04-23
+        while (PauseHasBeenPressed is False):   
+            wx.CallAfter(self.pausebtn.SetLabel, _("Pause"))
+            wx.CallAfter(self.pausebtn.Enable)
+            wx.CallAfter(self.printbtn.SetLabel, _("Restart"))
+            wx.CallAfter(self.printbtn.Disable)
+            wx.CallAfter(self.toolbarsizer.Layout)
+            #Stay in loop until button is pressed
+            print ('startprint %s', self.fgcode)
+            self.p.startprint(self.fgcode)
+            time.sleep(1.2)               
+            continue
+        #Pause button has been pressed!
+        #print("Pause Button Pressed!") 
+        wx.CallAfter(self.pausebtn.SetLabel, _("Resume"))
+        wx.CallAfter(self.toolbarsizer.Layout)
+
 
     ## Added By Roger 2020-05-30
     def printfile_one_cycle(self, event):
@@ -1745,6 +1757,10 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
             self.paused = True
             # self.p.runSmallScript(self.pauseScript)
             self.extra_print_time += int(time.time() - self.starttime)
+
+            self.p.send_now("G28 X")
+            self.log(_("Auto-home: G28 X"))
+            message = _("echo : Auto-home.")
             wx.CallAfter(self.pausebtn.SetLabel, _("Resume"))
             wx.CallAfter(self.toolbarsizer.Layout)
         else:
@@ -1781,14 +1797,17 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
     #  --------------------------------------------------------------
 
     def off(self, event = None):   
-        self.p.send_now("M84")
+        self.log(_("Print paused at: %s") % format_time(time.time()))
+        global PauseHasBeenPressed
+        PauseHasBeenPressed = True        
         #### use follow statment to turn off the t threading 
-        t.do_run = False
-        t.join() 
+        #t.do_run = False
+        #t.join() 
         message = _("echo : Turn off stepper motor.")
         self.p.send_now("G28 X")
         self.log(_("Auto-home: G28 X"))
         message = _("echo : Auto-home.")
+        self.p.send_now("M84 x")
 
     #  --------------------------------------------------------------
     #  Creat_Gcode          Added by Roger 2020-04-27
@@ -2244,29 +2263,6 @@ Printrun or BVM-Run<Ventilator>. If not, see <http://www.gnu.org/licenses/>."""
                 self.p.send_now("M23 " + target.lower())
         dlg.Destroy()
 
-    def LoopingPrint(self):   ### Added by Roger at 2020-04-23
-        if self.p.online:
-            self.p.send_now("G28 X")
-            self.log(_("Auto-home: G28 X"))
-        else:
-            self.logError(_("Ventilator is not online. <<<Taiwan can Help>>>"))
-   
-        while (getattr(t, "do_run", True) and (PauseHasBeenPressed is False)):   
-            wx.CallAfter(self.pausebtn.SetLabel, _("Pause"))
-            wx.CallAfter(self.pausebtn.Enable)
-            wx.CallAfter(self.printbtn.SetLabel, _("Restart"))
-            wx.CallAfter(self.printbtn.Disable)
-            wx.CallAfter(self.toolbarsizer.Layout)
-            #Stay in loop until button is pressed
-            print ('startprint %s', self.fgcode)
-            self.p.startprint(self.fgcode)
-            time.sleep(1.2)  
-            continue
-        #Pause button has been pressed!
-        #print("Pause Button Pressed!") 
-        wx.CallAfter(self.pausebtn.SetLabel, _("Resume"))
-        wx.CallAfter(self.toolbarsizer.Layout)
-      
 
     def getfiles(self):
         if not self.p.online:
